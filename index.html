@@ -281,33 +281,35 @@
                 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="usageDate1">First Usage Date:</label>
+                        <label for="importDate">Import Date:</label>
+                        <input type="date" id="importDate" value="2025-07-27">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="usageDate1">Usage Day 1:</label>
                         <input type="date" id="usageDate1" value="2025-07-27">
                     </div>
                     
                     <div class="form-group">
-                        <label for="usageDate2">Second Usage Date:</label>
+                        <label for="usageDate2">Usage Day 2:</label>
                         <input type="date" id="usageDate2" value="2025-07-28">
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="importDate1">Import Date for First Usage:</label>
-                        <input type="date" id="importDate1" value="2025-07-27">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="importDate2">Import Date for Second Usage:</label>
-                        <input type="date" id="importDate2" value="2025-07-28">
-                    </div>
-                    
+                </div>
+
+                <div class="form-grid">
                     <div class="form-group">
                         <label for="schema">Schema:</label>
-                        <input type="text" id="schema" value="uat_c106" placeholder="Enter schema name">
+                        <select id="schema">
+                            <option value="uat_c106">uat_c106</option>
+                            <option value="b2c_c106">b2c_c106</option>
+                        </select>
                     </div>
                     
                     <div class="form-group">
-                        <label for="baseDate">Base Date for Calculation:</label>
-                        <input type="date" id="baseDate" value="2025-07-27">
+                        <label>&nbsp;</label>
+                        <small style="color: #666; font-size: 0.9rem; padding: 10px; background: #f0f8ff; border-radius: 6px; border-left: 3px solid #667eea;">
+                            📅 <strong>Date Logic:</strong> Calculated dates will be <strong>Import Date + DLT</strong>
+                        </small>
                     </div>
                 </div>
 
@@ -329,20 +331,20 @@
                 <div class="date-info">
                     <div class="date-info-grid">
                         <div class="date-info-item">
-                            <strong>First Usage Date</strong>
+                            <strong>Import Date</strong>
+                            <span id="previewImport">2025-07-27</span>
+                        </div>
+                        <div class="date-info-item">
+                            <strong>Usage Day 1</strong>
                             <span id="previewDate1">2025-07-27</span>
                         </div>
                         <div class="date-info-item">
-                            <strong>Second Usage Date</strong>
+                            <strong>Usage Day 2</strong>
                             <span id="previewDate2">2025-07-28</span>
                         </div>
                         <div class="date-info-item">
-                            <strong>Import Date 1</strong>
-                            <span id="previewImport1">2025-07-27</span>
-                        </div>
-                        <div class="date-info-item">
-                            <strong>Import Date 2</strong>
-                            <span id="previewImport2">2025-07-28</span>
+                            <strong>Selected Schema</strong>
+                            <span id="previewSchema">uat_c106</span>
                         </div>
                     </div>
                 </div>
@@ -366,7 +368,7 @@ Click "Generate SQL" to create your customized query...
 
         // Update preview when inputs change
         document.addEventListener('DOMContentLoaded', function() {
-            const inputs = ['usageDate1', 'usageDate2', 'importDate1', 'importDate2'];
+            const inputs = ['usageDate1', 'usageDate2', 'importDate', 'schema'];
             inputs.forEach(id => {
                 document.getElementById(id).addEventListener('change', updatePreview);
             });
@@ -377,8 +379,8 @@ Click "Generate SQL" to create your customized query...
         function updatePreview() {
             document.getElementById('previewDate1').textContent = document.getElementById('usageDate1').value;
             document.getElementById('previewDate2').textContent = document.getElementById('usageDate2').value;
-            document.getElementById('previewImport1').textContent = document.getElementById('importDate1').value;
-            document.getElementById('previewImport2').textContent = document.getElementById('importDate2').value;
+            document.getElementById('previewImport').textContent = document.getElementById('importDate').value;
+            document.getElementById('previewSchema').textContent = document.getElementById('schema').value;
         }
 
         function formatDateForSQL(dateString) {
@@ -401,17 +403,21 @@ Click "Generate SQL" to create your customized query...
             return daysDiff + 2; // Excel adjustment
         }
 
+        function getFormattedDate(baseDate, daysToAdd) {
+            const date = new Date(baseDate);
+            date.setDate(date.getDate() + daysToAdd);
+            return date.toISOString().split('T')[0].split('-').reverse().join('-');
+        }
+
         function generateSQL() {
             const usageDate1 = document.getElementById('usageDate1').value;
             const usageDate2 = document.getElementById('usageDate2').value;
-            const importDate1 = document.getElementById('importDate1').value;
-            const importDate2 = document.getElementById('importDate2').value;
+            const importDate = document.getElementById('importDate').value;
             const schema = document.getElementById('schema').value;
-            const baseDate = document.getElementById('baseDate').value;
 
             const date1Label = getDateLabel(usageDate1);
             const date2Label = getDateLabel(usageDate2);
-            const serialDate = calculateSerialDate(baseDate);
+            const serialDate = calculateSerialDate(importDate);
 
             generatedSQL = `WITH ${date1Label}_usage AS (
    SELECT
@@ -422,7 +428,7 @@ Click "Generate SQL" to create your customized query...
    FROM ${schema}.vvsimulationprojection vsp
    JOIN ${schema}.vvwarehouseparts wp
        ON vsp.wwarehousepartid = wp.wwarehousepartid
-   WHERE vsp.importdatetime = '${formatDateForSQL(importDate1)}'
+   WHERE vsp.importdatetime = '${formatDateForSQL(importDate)}'
        AND wp.partcode != 'BIN'
        AND wp.PartGroup1Code != 'cashcenter'
 ),
@@ -437,7 +443,7 @@ ${date2Label}_usage AS (
    FROM ${schema}.vvsimulationprojection vsp
    JOIN ${schema}.vvwarehouseparts wp
        ON vsp.wwarehousepartid = wp.wwarehousepartid
-   WHERE vsp.importdatetime = '${formatDateForSQL(importDate2)}'
+   WHERE vsp.importdatetime = '${formatDateForSQL(importDate)}'
        AND wp.partcode != 'BIN'
        AND wp.PartGroup1Code != 'cashcenter'
 )
@@ -451,10 +457,10 @@ SELECT
    ROUND((COALESCE(a.usage_${date1Label}, 0) + COALESCE(b.usage_${date2Label}, 0)) / 2.0) as quantity,
    'Anticipation' as AnticipationZoneName,
    COALESCE(a.dlt, 0) as dlt,
-   ${serialDate} + COALESCE(a.dlt, 0) + 7 as Date,
+   ${serialDate} + COALESCE(a.dlt, 0) as Date,
    CASE 
-       WHEN a.dlt = 1 THEN '${getFormattedDate(baseDate, 8)}'
-       WHEN a.dlt = 2 THEN '${getFormattedDate(baseDate, 9)}'
+       WHEN a.dlt = 1 THEN '${getFormattedDate(importDate, 1)}'
+       WHEN a.dlt = 2 THEN '${getFormattedDate(importDate, 2)}'
        ELSE NULL
    END as date2
 FROM ${date2Label}_usage b
@@ -466,10 +472,11 @@ ORDER BY b.warehousecode, b.partcode;
 
 -- Query generated on: ${new Date().toLocaleString()}
 -- Configuration:
--- First Usage Date: ${usageDate1} (Import: ${importDate1})
--- Second Usage Date: ${usageDate2} (Import: ${importDate2})
+-- Import Date: ${importDate}
+-- Usage Day 1: ${usageDate1}
+-- Usage Day 2: ${usageDate2}
 -- Schema: ${schema}
--- Base Date: ${baseDate}`;
+-- Date Logic: Import Date + DLT (no additional offset)`;
 
             document.getElementById('sqlOutput').textContent = generatedSQL;
         }
