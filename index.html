@@ -430,7 +430,7 @@ Click "Generate SQL" to create your customized query...
        ON vsp.wwarehousepartid = wp.wwarehousepartid
    WHERE vsp.importdatetime = '${formatDateForSQL(importDate)}'
        AND wp.partcode != 'BIN'
-       AND wp.PartGroup1Code != 'cashcenter'
+       AND wp.PartGroup1Code != 'CashCenter'
 ),
 ${date2Label}_usage AS (
    SELECT
@@ -445,7 +445,7 @@ ${date2Label}_usage AS (
        ON vsp.wwarehousepartid = wp.wwarehousepartid
    WHERE vsp.importdatetime = '${formatDateForSQL(importDate)}'
        AND wp.partcode != 'BIN'
-       AND wp.PartGroup1Code != 'cashcenter'
+       AND wp.PartGroup1Code != 'CashCenter'
 )
 SELECT
    b.warehousecode,
