@@ -997,26 +997,30 @@ Click "Generate SQL" to create your customized, enterprise-grade query...
             generateBtn.innerHTML = '<span class="loading"></span> Generating...';
             
             setTimeout(() => {
-                const schema = document.getElementById('schema').value;
+                try {
+                    const schema = document.getElementById('schema').value;
 
-                if (currentMode === 'devices') {
-                    generateDevicesSQL(schema);
-                } else {
-                    generateCashCentresSQL(schema);
+                    if (currentMode === 'devices') {
+                        generateDevicesSQL(schema);
+                    } else {
+                        generateCashCentresSQL(schema);
+                    }
+                    
+                    // Update counter
+                    queryCount++;
+                    document.getElementById('queryCount').textContent = queryCount;
+                    
+                    // Add glow effect
+                    document.querySelector('.sql-output').classList.add('glow');
+                    setTimeout(() => {
+                        document.querySelector('.sql-output').classList.remove('glow');
+                    }, 2000);
+                } catch (error) {
+                    console.error('Error generating SQL:', error);
+                } finally {
+                    // Always reset button regardless of success/error
+                    generateBtn.innerHTML = originalText;
                 }
-                
-                // Update counter
-                queryCount++;
-                document.getElementById('queryCount').textContent = queryCount;
-                
-                // Reset button
-                generateBtn.innerHTML = originalText;
-                
-                // Add glow effect
-                document.querySelector('.sql-output').classList.add('glow');
-                setTimeout(() => {
-                    document.querySelector('.sql-output').classList.remove('glow');
-                }, 2000);
             }, 800);
         }
 
