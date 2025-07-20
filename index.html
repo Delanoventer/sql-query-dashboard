@@ -1050,7 +1050,7 @@ WITH ${date1Label}_usage AS (
    FROM ${schema}.vvsimulationprojection vsp
    JOIN ${schema}.vvwarehouseparts wp
        ON vsp.wwarehousepartid = wp.wwarehousepartid
-   WHERE vsp.importdatetime = '${formatDateForSQL(importDate)}'
+   WHERE vsp.importdatetime = '${formatDateForSQL(usageDate1)}'
        AND wp.partcode != 'BIN'
        AND wp.PartGroup1Code != 'CashCenter'  -- 🚫 Exclude CashCenter records
 ),
@@ -1065,7 +1065,7 @@ ${date2Label}_usage AS (
    FROM ${schema}.vvsimulationprojection vsp
    JOIN ${schema}.vvwarehouseparts wp
        ON vsp.wwarehousepartid = wp.wwarehousepartid
-   WHERE vsp.importdatetime = '${formatDateForSQL(importDate)}'
+   WHERE vsp.importdatetime = '${formatDateForSQL(usageDate2)}'
        AND wp.partcode != 'BIN'
        AND wp.PartGroup1Code != 'CashCenter'  -- 🚫 Exclude CashCenter records
 )
@@ -1096,12 +1096,13 @@ ORDER BY b.warehousecode, b.partcode;
 -- ====================================================================
 -- 📋 CONFIGURATION SUMMARY
 -- ====================================================================
--- Import Date: ${importDate}
--- Usage Day 1: ${usageDate1}
--- Usage Day 2: ${usageDate2}
+-- Base Import Date: ${importDate} (used for date calculations)
+-- Usage Day 1: ${usageDate1} (pulls from import date: ${usageDate1})
+-- Usage Day 2: ${usageDate2} (pulls from import date: ${usageDate2})
 -- Schema: ${schema}
 -- Filter: Excludes CashCenter records for device-only analysis
 -- Quantity Logic: (Day1 + Day2) / 2 - Simple average
+-- Note: Each usage day pulls from its corresponding import date
 -- ====================================================================`;
 
             document.getElementById('sqlOutput').textContent = generatedSQL;
