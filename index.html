@@ -1186,8 +1186,8 @@ SELECT
          ((COALESCE(b.usage_${day2Label}, 0) + COALESCE(c.usage_${day3Label}, 0)) / 2.0)) as quantity,
    'Anticipation' as AnticipationZoneName,
    COALESCE(a.dlt, 0) as dlt,
-   '${getYMDFormattedDate(importDate, 1)}' as Date,
-   '${getYMDFormattedDate(importDate, 2)}' as date2
+   '${getYMDFormattedDate(importDate, 2)}' as Date,
+   '${getYMDFormattedDate(importDate, 3)}' as date2
 FROM ${day3Label}_usage c
 LEFT JOIN ${day1Label}_usage a
    ON c.wwarehousepartid = a.wwarehousepartid
@@ -1208,8 +1208,8 @@ ORDER BY c.warehousecode, c.partcode;
 -- Schema: ${schema}
 -- Filter: CashCenter records exclusively
 -- Quantity Logic: ((Day1 + Day2) / 2) + ((Day2 + Day3) / 2) - Rolling average
--- Date Field: Import Date + 1 (${getYMDFormattedDate(importDate, 1)})
--- Date2 Field: Import Date + 2 (${getYMDFormattedDate(importDate, 2)})
+-- Date Field: Import Date + 2 (${getYMDFormattedDate(importDate, 2)})
+-- Date2 Field: Import Date + 3 (${getYMDFormattedDate(importDate, 3)})
 -- ====================================================================`;
 
             document.getElementById('sqlOutput').textContent = generatedSQL;
