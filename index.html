@@ -695,7 +695,7 @@
                     <strong>🚀 Devices Mode:</strong> Advanced device usage analysis with 2-day comparison. Excludes CashCenter records for precise device-only insights. Formula: (Day1 + Day2) ÷ 2
                 </div>
                 <div class="info-box cashcentres-mode">
-                    <strong>💎 Cash Centres Mode:</strong> Sophisticated cash center analysis across 3 consecutive days with enhanced calculation. Only CashCenter records. Formula: ((Day1 + Day2) ÷ 2) + ((Day2 + Day3) ÷ 2)
+                    <strong>💎 Cash Centres Mode:</strong> Import Date must be a Saturday. Day 2 = Saturday + 2 days (Monday), Day 3 = Saturday + 3 days (Tuesday). Formula: ((Day1 + Day2) ÷ 2) + ((Day2 + Day3) ÷ 2)
                 </div>
             </div>
 
@@ -726,23 +726,26 @@
                 <div class="cashcentres-mode">
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="ccImportDate">📅 Import Date:</label>
-                            <input type="date" id="ccImportDate" value="2025-07-27" onchange="updateCashCentreDates()">
+                            <label for="ccImportDate">📅 Import Date (Must be Saturday):</label>
+                            <input type="date" id="ccImportDate" value="2025-07-26" onchange="updateCashCentreDates()">
+                            <small style="color: #666; margin-top: 5px; font-size: 0.85rem;">
+                                🗓️ Only Saturdays are allowed for CashCentre analysis
+                            </small>
                         </div>
                         
                         <div class="form-group">
-                            <label for="ccDay1">📊 Day 1 (Import Date):</label>
-                            <input type="date" id="ccDay1" value="2025-07-27" disabled class="glow">
+                            <label for="ccDay1">📊 Day 1 (Saturday):</label>
+                            <input type="date" id="ccDay1" value="2025-07-26" disabled class="glow">
                         </div>
                         
                         <div class="form-group">
-                            <label for="ccDay2">📊 Day 2 (Import + 1):</label>
-                            <input type="date" id="ccDay2" value="2025-07-28" disabled class="glow">
+                            <label for="ccDay2">📊 Day 2 (Import + 2):</label>
+                            <input type="date" id="ccDay2" value="2025-07-29" disabled class="glow">
                         </div>
                         
                         <div class="form-group">
-                            <label for="ccDay3">📊 Day 3 (Import + 2):</label>
-                            <input type="date" id="ccDay3" value="2025-07-29" disabled class="glow">
+                            <label for="ccDay3">📊 Day 3 (Import + 3):</label>
+                            <input type="date" id="ccDay3" value="2025-07-30" disabled class="glow">
                         </div>
                     </div>
                 </div>
@@ -805,18 +808,18 @@
                         <div class="date-info-grid">
                             <div class="date-info-item">
                                 <strong>Import Date</strong>
-                                <span id="ccPreviewImport">2025-07-27</span>
+                                <span id="ccPreviewImport">2025-07-26</span>
                             </div>
                             <div class="date-info-item">
-                                <strong>Day 1</strong>
-                                <span id="ccPreviewDay1">2025-07-27</span>
+                                <strong>Day 1 (Saturday)</strong>
+                                <span id="ccPreviewDay1">2025-07-26</span>
                             </div>
                             <div class="date-info-item">
-                                <strong>Day 2</strong>
+                                <strong>Day 2 (Monday)</strong>
                                 <span id="ccPreviewDay2">2025-07-28</span>
                             </div>
                             <div class="date-info-item">
-                                <strong>Day 3</strong>
+                                <strong>Day 3 (Tuesday)</strong>
                                 <span id="ccPreviewDay3">2025-07-29</span>
                             </div>
                         </div>
@@ -934,17 +937,28 @@ Click "Generate SQL" to create your customized, enterprise-grade query...
             
             const date = new Date(importDate);
             
-            // Day 1 = Import Date
+            // Check if it's a Saturday (0 = Sunday, 6 = Saturday)
+            if (date.getDay() !== 6) {
+                showCustomNotification('⚠️ Please select a Saturday for CashCentre import date!', '#fa709a');
+                // Find the nearest Saturday
+                const nearestSaturday = new Date(date);
+                const daysToAdd = (6 - date.getDay()) % 7;
+                nearestSaturday.setDate(nearestSaturday.getDate() + daysToAdd);
+                document.getElementById('ccImportDate').value = nearestSaturday.toISOString().split('T')[0];
+                return;
+            }
+            
+            // Day 1 = Import Date (Saturday)
             document.getElementById('ccDay1').value = importDate;
             
-            // Day 2 = Import Date + 1
+            // Day 2 = Import Date + 2 (Monday)
             const day2 = new Date(date);
-            day2.setDate(day2.getDate() + 1);
+            day2.setDate(day2.getDate() + 2);
             document.getElementById('ccDay2').value = day2.toISOString().split('T')[0];
             
-            // Day 3 = Import Date + 2
+            // Day 3 = Import Date + 3 (Tuesday)
             const day3 = new Date(date);
-            day3.setDate(day3.getDate() + 2);
+            day3.setDate(day3.getDate() + 3);
             document.getElementById('ccDay3').value = day3.toISOString().split('T')[0];
             
             updatePreview();
@@ -1202,9 +1216,9 @@ ORDER BY c.warehousecode, c.partcode;
 -- 📋 CONFIGURATION SUMMARY
 -- ====================================================================
 -- Import Date: ${importDate}
--- Day 1: ${day1} (Import Date)
--- Day 2: ${day2} (Import Date + 1)
--- Day 3: ${day3} (Import Date + 2)
+-- Day 1: ${day1} (Saturday - Import Date)
+-- Day 2: ${day2} (Monday - Import Date + 2)
+-- Day 3: ${day3} (Tuesday - Import Date + 3)
 -- Schema: ${schema}
 -- Filter: CashCenter records exclusively
 -- Quantity Logic: ((Day1 + Day2) / 2) + ((Day2 + Day3) / 2) - Rolling average
