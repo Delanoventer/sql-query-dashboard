@@ -990,6 +990,12 @@ Click "Generate SQL" to create your customized, enterprise-grade query...
             return date.toISOString().split('T')[0].split('-').reverse().join('-');
         }
 
+        function getYMDFormattedDate(baseDate, daysToAdd) {
+            const date = new Date(baseDate);
+            date.setDate(date.getDate() + daysToAdd);
+            return date.toISOString().split('T')[0];
+        }
+
         function generateSQL() {
             // Show loading state
             const generateBtn = document.getElementById('generateText');
@@ -1180,12 +1186,8 @@ SELECT
          ((COALESCE(b.usage_${day2Label}, 0) + COALESCE(c.usage_${day3Label}, 0)) / 2.0)) as quantity,
    'Anticipation' as AnticipationZoneName,
    COALESCE(a.dlt, 0) as dlt,
-   ${serialDate} + COALESCE(a.dlt, 0) as Date,
-   CASE 
-       WHEN a.dlt = 1 THEN '${getFormattedDate(importDate, 1)}'
-       WHEN a.dlt = 2 THEN '${getFormattedDate(importDate, 2)}'
-       ELSE NULL
-   END as date2
+   '${getYMDFormattedDate(importDate, 1)}' as Date,
+   '${getYMDFormattedDate(importDate, 2)}' as date2
 FROM ${day3Label}_usage c
 LEFT JOIN ${day1Label}_usage a
    ON c.wwarehousepartid = a.wwarehousepartid
@@ -1206,6 +1208,8 @@ ORDER BY c.warehousecode, c.partcode;
 -- Schema: ${schema}
 -- Filter: CashCenter records exclusively
 -- Quantity Logic: ((Day1 + Day2) / 2) + ((Day2 + Day3) / 2) - Rolling average
+-- Date Field: Import Date + 1 (${getYMDFormattedDate(importDate, 1)})
+-- Date2 Field: Import Date + 2 (${getYMDFormattedDate(importDate, 2)})
 -- ====================================================================`;
 
             document.getElementById('sqlOutput').textContent = generatedSQL;
