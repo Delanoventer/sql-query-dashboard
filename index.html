@@ -35,17 +35,39 @@
             position: relative;
         }
 
-        /* Animated Background */
-        body::before {
-            content: '';
+        /* Animated Background Particles */
+        .particles {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"><animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite"/></circle><circle cx="80" cy="30" r="1.5" fill="rgba(255,255,255,0.1)"><animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite" begin="1s"/></circle><circle cx="60" cy="70" r="1" fill="rgba(255,255,255,0.1)"><animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite" begin="2s"/></circle></svg>') repeat;
             pointer-events: none;
             z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float-particle 20s infinite linear;
+        }
+
+        @keyframes float-particle {
+            from {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-100px) rotate(720deg);
+                opacity: 0;
+            }
         }
 
         .container {
@@ -58,6 +80,18 @@
             box-shadow: var(--shadow-xl);
             overflow: hidden;
             position: relative;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .container::before {
@@ -136,6 +170,23 @@
         .stat-item {
             text-align: center;
             padding: 10px;
+            animation: slideUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .stat-item:nth-child(1) { animation-delay: 0.1s; }
+        .stat-item:nth-child(2) { animation-delay: 0.2s; }
+        .stat-item:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
         }
 
         .stat-number {
@@ -143,6 +194,12 @@
             font-size: 1.8rem;
             font-weight: 700;
             color: #4facfe;
+            transition: all 0.3s ease;
+        }
+
+        .stat-number.animate {
+            transform: scale(1.2);
+            color: #00f2fe;
         }
 
         .stat-label {
@@ -164,6 +221,18 @@
             border: 1px solid rgba(79, 172, 254, 0.2);
             position: relative;
             overflow: hidden;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .mode-section::before {
@@ -262,6 +331,7 @@
         .toggle-option input {
             margin: 0;
             opacity: 0;
+            position: absolute;
         }
 
         .info-box {
@@ -274,6 +344,7 @@
             color: #856404;
             position: relative;
             z-index: 2;
+            animation: fadeIn 0.6s ease-out;
         }
 
         .config-section {
@@ -284,6 +355,7 @@
             border-left: 4px solid #667eea;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             position: relative;
+            animation: slideIn 0.6s ease-out 0.2s both;
         }
 
         .config-section h2 {
@@ -319,6 +391,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            animation: fadeIn 0.6s ease-out;
         }
 
         .form-group label {
@@ -351,6 +424,13 @@
             color: #6c757d;
             cursor: not-allowed;
             opacity: 0.7;
+        }
+
+        .form-group small {
+            color: #666;
+            margin-top: 5px;
+            font-size: 0.85rem;
+            opacity: 0.8;
         }
 
         .actions {
@@ -432,6 +512,7 @@
             margin-top: 30px;
             position: relative;
             overflow: hidden;
+            animation: slideIn 0.6s ease-out 0.4s both;
         }
 
         .result-section::before {
@@ -512,6 +593,7 @@
             margin-top: 25px;
             border-left: 4px solid #4facfe;
             box-shadow: 0 10px 30px rgba(79, 172, 254, 0.1);
+            animation: slideIn 0.6s ease-out 0.3s both;
         }
 
         .preview-section h3 {
@@ -548,6 +630,7 @@
 
         .date-info-item:hover {
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
         }
 
         .date-info-item strong {
@@ -602,6 +685,33 @@
             box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
         }
 
+        /* Keyboard shortcuts help */
+        .shortcuts-help {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--dark-gradient);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+            cursor: help;
+        }
+
+        .shortcuts-help:hover {
+            opacity: 1;
+        }
+
+        .shortcuts-help kbd {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            margin: 0 2px;
+        }
+
         @media (max-width: 768px) {
             .dashboard {
                 padding: 25px;
@@ -617,6 +727,7 @@
             
             .btn {
                 justify-content: center;
+                width: 100%;
             }
 
             .mode-toggle {
@@ -635,6 +746,10 @@
             .header-stats {
                 gap: 20px;
             }
+
+            .shortcuts-help {
+                display: none;
+            }
         }
 
         /* Loading animation */
@@ -648,12 +763,51 @@
             animation: spin 1s ease-in-out infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        /* Success checkmark animation */
+        .success-check {
+            width: 24px;
+            height: 24px;
+            display: inline-block;
+            position: relative;
+        }
+
+        .success-check::before {
+            content: '✓';
+            position: absolute;
+            font-size: 20px;
+            animation: checkmark 0.6s ease-out;
+        }
+
+        @keyframes checkmark {
+            0% {
+                transform: scale(0) rotate(-45deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2) rotate(-45deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        /* Error shake animation */
+        .error-shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
         }
     </style>
 </head>
 <body>
+    <!-- Animated particles background -->
+    <div class="particles" id="particles"></div>
+
     <div class="container">
         <div class="header">
             <div class="header-content">
@@ -728,9 +882,7 @@
                         <div class="form-group">
                             <label for="ccImportDate">📅 Import Date (Must be Saturday):</label>
                             <input type="date" id="ccImportDate" value="2025-07-26" onchange="updateCashCentreDates()">
-                            <small style="color: #666; margin-top: 5px; font-size: 0.85rem;">
-                                🗓️ Only Saturdays are allowed for CashCentre analysis
-                            </small>
+                            <small>🗓️ Only Saturdays are allowed for CashCentre analysis</small>
                         </div>
                         
                         <div class="form-group">
@@ -763,12 +915,10 @@
                     <div class="form-group cashcentres-mode">
                         <label>📋 Output Options:</label>
                         <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(102, 126, 234, 0.05); border-radius: 8px;">
-                            <input type="checkbox" id="duplicateRows" checked onchange="generateSQL()">
+                            <input type="checkbox" id="duplicateRows" checked onchange="generateSQL()" style="position: static; opacity: 1;">
                             <label for="duplicateRows" style="margin: 0; cursor: pointer; font-weight: normal;">✅ Generate duplicate rows with different dates</label>
                         </div>
-                        <small style="color: #666; margin-top: 5px; font-size: 0.85rem;">
-                            Creates two identical rows per part with Date = Import+2 and Import+3
-                        </small>
+                        <small>Creates two identical rows per part with Date = Import+2 and Import+3</small>
                     </div>
                 </div>
 
@@ -863,6 +1013,13 @@ Click "Generate SQL" to create your customized, enterprise-grade query...
         ✅ SQL copied to clipboard successfully!
     </div>
 
+    <div class="shortcuts-help">
+        <strong>⌨️ Keyboard Shortcuts:</strong><br>
+        <kbd>Ctrl</kbd>+<kbd>G</kbd> Generate SQL<br>
+        <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd> Copy<br>
+        <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> Download
+    </div>
+
     <script>
         let generatedSQL = '';
         let currentMode = 'devices';
@@ -870,6 +1027,7 @@ Click "Generate SQL" to create your customized, enterprise-grade query...
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
             updatePreview();
             generateSQL();
             
@@ -877,7 +1035,29 @@ Click "Generate SQL" to create your customized, enterprise-grade query...
             document.querySelectorAll('.btn').forEach(btn => {
                 btn.addEventListener('mouseenter', createSparkles);
             });
+
+            // Add input change listeners
+            document.addEventListener('change', function(e) {
+                if (e.target.matches('#usageDate1, #usageDate2, #importDate, #schema')) {
+                    updatePreview();
+                    generateSQL();
+                }
+            });
         });
+
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.width = particle.style.height = Math.random() * 10 + 5 + 'px';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = Math.random() * 20 + 20 + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
 
         function createSparkles(e) {
             const button = e.target;
@@ -891,6 +1071,7 @@ Click "Generate SQL" to create your customized, enterprise-grade query...
                     sparkle.style.pointerEvents = 'none';
                     sparkle.style.fontSize = '12px';
                     sparkle.style.zIndex = '1000';
+                    sparkle.style.animation = 'fadeOut 1s ease-out forwards';
                     button.style.position = 'relative';
                     button.appendChild(sparkle);
                     
@@ -937,8 +1118,10 @@ Click "Generate SQL" to create your customized, enterprise-grade query...
             notification.classList.add('show');
             setTimeout(() => {
                 notification.classList.remove('show');
-                notification.innerHTML = '✅ SQL copied to clipboard successfully!';
-                notification.style.background = 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)';
+                setTimeout(() => {
+                    notification.innerHTML = '✅ SQL copied to clipboard successfully!';
+                    notification.style.background = 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)';
+                }, 400);
             }, 2000);
         }
 
@@ -953,9 +1136,10 @@ Click "Generate SQL" to create your customized, enterprise-grade query...
                 showCustomNotification('⚠️ Please select a Saturday for CashCentre import date!', '#fa709a');
                 // Find the nearest Saturday
                 const nearestSaturday = new Date(date);
-                const daysToAdd = (6 - date.getDay()) % 7;
-                nearestSaturday.setDate(nearestSaturday.getDate() + daysToAdd);
+                const daysToAdd = (6 - date.getDay() + 7) % 7 || 7;
+                nearestSaturday.setDate(nearestSaturday.getDate() + daysToAdd - 7);
                 document.getElementById('ccImportDate').value = nearestSaturday.toISOString().split('T')[0];
+                updateCashCentreDates();
                 return;
             }
             
@@ -1067,20 +1251,32 @@ Click "Generate SQL" to create your customized, enterprise-grade query...
                         generateCashCentresSQL(schema);
                     }
                     
-                    // Update counter
+                    // Update counter with animation
                     queryCount++;
-                    document.getElementById('queryCount').textContent = queryCount;
+                    const countElement = document.getElementById('queryCount');
+                    countElement.textContent = queryCount;
+                    countElement.classList.add('animate');
+                    setTimeout(() => countElement.classList.remove('animate'), 300);
                     
                     // Add glow effect
                     document.querySelector('.sql-output').classList.add('glow');
                     setTimeout(() => {
                         document.querySelector('.sql-output').classList.remove('glow');
                     }, 2000);
+                    
+                    // Show success
+                    generateBtn.innerHTML = '<span class="success-check"></span> Generated!';
+                    setTimeout(() => {
+                        generateBtn.innerHTML = originalText;
+                    }, 2000);
                 } catch (error) {
                     console.error('Error generating SQL:', error);
-                } finally {
-                    // Always reset button regardless of success/error
-                    generateBtn.innerHTML = originalText;
+                    generateBtn.innerHTML = '❌ Error!';
+                    document.querySelector('.config-section').classList.add('error-shake');
+                    setTimeout(() => {
+                        generateBtn.innerHTML = originalText;
+                        document.querySelector('.config-section').classList.remove('error-shake');
+                    }, 1000);
                 }
             }, 800);
         }
@@ -1103,54 +1299,54 @@ Click "Generate SQL" to create your customized, enterprise-grade query...
 -- ====================================================================
 
 WITH ${date1Label}_usage AS (
-   SELECT
-       vsp.wwarehousepartid,
-       vsp.usage as usage_${date1Label},
-       vsp.dlt,
-       ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-   FROM ${schema}.vvsimulationprojection vsp
-   JOIN ${schema}.vvwarehouseparts wp
-       ON vsp.wwarehousepartid = wp.wwarehousepartid
-   WHERE vsp.importdatetime = '${formatDateForSQL(usageDate1)}'
-       AND wp.partcode != 'BIN'
-       AND wp.PartGroup1Code != 'CashCenter'  -- 🚫 Exclude CashCenter records
+    SELECT
+        vsp.wwarehousepartid,
+        vsp.usage as usage_${date1Label},
+        vsp.dlt,
+        ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
+    FROM ${schema}.vvsimulationprojection vsp
+    JOIN ${schema}.vvwarehouseparts wp
+        ON vsp.wwarehousepartid = wp.wwarehousepartid
+    WHERE vsp.importdatetime = '${formatDateForSQL(usageDate1)}'
+        AND wp.partcode != 'BIN'
+        AND wp.PartGroup1Code != 'CashCenter'  -- 🚫 Exclude CashCenter records
 ),
 ${date2Label}_usage AS (
-   SELECT
-       vsp.wwarehousepartid,
-       vsp.usage as usage_${date2Label},
-       wp.warehousecode,
-       wp.partcode,
-       wp.PartGroup1Code,
-       ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-   FROM ${schema}.vvsimulationprojection vsp
-   JOIN ${schema}.vvwarehouseparts wp
-       ON vsp.wwarehousepartid = wp.wwarehousepartid
-   WHERE vsp.importdatetime = '${formatDateForSQL(usageDate2)}'
-       AND wp.partcode != 'BIN'
-       AND wp.PartGroup1Code != 'CashCenter'  -- 🚫 Exclude CashCenter records
+    SELECT
+        vsp.wwarehousepartid,
+        vsp.usage as usage_${date2Label},
+        wp.warehousecode,
+        wp.partcode,
+        wp.PartGroup1Code,
+        ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
+    FROM ${schema}.vvsimulationprojection vsp
+    JOIN ${schema}.vvwarehouseparts wp
+        ON vsp.wwarehousepartid = wp.wwarehousepartid
+    WHERE vsp.importdatetime = '${formatDateForSQL(usageDate2)}'
+        AND wp.partcode != 'BIN'
+        AND wp.PartGroup1Code != 'CashCenter'  -- 🚫 Exclude CashCenter records
 )
 SELECT
-   b.warehousecode,
-   b.partcode,
-   b.PartGroup1Code,
-   b.wwarehousepartid,
-   COALESCE(a.usage_${date1Label}, 0) as usage_${usageDate1.replace(/-/g, '_')},
-   COALESCE(b.usage_${date2Label}, 0) as usage_${usageDate2.replace(/-/g, '_')},
-   -- 📊 Quantity Calculation: (Day1 + Day2) / 2
-   ROUND((COALESCE(a.usage_${date1Label}, 0) + COALESCE(b.usage_${date2Label}, 0)) / 2.0) as quantity,
-   'Anticipation' as AnticipationZoneName,
-   COALESCE(a.dlt, 0) as dlt,
-   ${serialDate} + COALESCE(a.dlt, 0) as Date,
-   CASE 
-       WHEN a.dlt = 1 THEN '${getFormattedDate(importDate, 1)}'
-       WHEN a.dlt = 2 THEN '${getFormattedDate(importDate, 2)}'
-       ELSE NULL
-   END as date2
+    b.warehousecode,
+    b.partcode,
+    b.PartGroup1Code,
+    b.wwarehousepartid,
+    COALESCE(a.usage_${date1Label}, 0) as usage_${usageDate1.replace(/-/g, '_')},
+    COALESCE(b.usage_${date2Label}, 0) as usage_${usageDate2.replace(/-/g, '_')},
+    -- 📊 Quantity Calculation: (Day1 + Day2) / 2
+    ROUND((COALESCE(a.usage_${date1Label}, 0) + COALESCE(b.usage_${date2Label}, 0)) / 2.0) as quantity,
+    'Anticipation' as AnticipationZoneName,
+    COALESCE(a.dlt, 0) as dlt,
+    ${serialDate} + COALESCE(a.dlt, 0) as Date,
+    CASE 
+        WHEN a.dlt = 1 THEN '${getFormattedDate(importDate, 1)}'
+        WHEN a.dlt = 2 THEN '${getFormattedDate(importDate, 2)}'
+        ELSE NULL
+    END as date2
 FROM ${date2Label}_usage b
 LEFT JOIN ${date1Label}_usage a
-   ON b.wwarehousepartid = a.wwarehousepartid
-   AND a.rn = 1
+    ON b.wwarehousepartid = a.wwarehousepartid
+    AND a.rn = 1
 WHERE b.rn = 1
 ORDER BY b.warehousecode, b.partcode;
 
@@ -1181,7 +1377,7 @@ ORDER BY b.warehousecode, b.partcode;
             const day3Label = getDateLabel(day3);
 
             if (duplicateRows) {
-                // Generate query with duplicate rows using the working Athena structure
+                // Generate query with duplicate rows using the corrected structure
                 const thursdayDate = getThursdayFromSaturday(importDate);
                 const fridayDate = getFridayFromSaturday(importDate);
                 
@@ -1193,103 +1389,114 @@ ORDER BY b.warehousecode, b.partcode;
 -- Schema: ${schema}
 -- ====================================================================
 
-WITH base_query AS (
-   SELECT
-       c.warehousecode,
-       c.partcode,
-       c.PartGroup1Code,
-       c.wwarehousepartid,
-       COALESCE(a.usage_${day1Label}, 0) as usage_${day1.replace(/-/g, '_')},
-       COALESCE(b.usage_${day2Label}, 0) as usage_${day2.replace(/-/g, '_')},
-       COALESCE(c.usage_${day3Label}, 0) as usage_${day3.replace(/-/g, '_')},
-       ROUND(((COALESCE(a.usage_${day1Label}, 0) + COALESCE(b.usage_${day2Label}, 0)) / 2.0) + 
-             ((COALESCE(b.usage_${day2Label}, 0) + COALESCE(c.usage_${day3Label}, 0)) / 2.0)) as quantity,
-       'Anticipation' as AnticipationZoneName,
-       COALESCE(a.dlt, 0) as dlt
-   FROM (
-       SELECT
-           vsp.wwarehousepartid,
-           vsp.usage as usage_${day3Label},
-           wp.warehousecode,
-           wp.partcode,
-           wp.PartGroup1Code,
-           ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-       FROM ${schema}.vvsimulationprojection vsp
-       JOIN ${schema}.vvwarehouseparts wp ON vsp.wwarehousepartid = wp.wwarehousepartid
-       WHERE vsp.importdatetime = '${formatDateForSQL(day3)}'
-           AND wp.partcode != 'BIN'
-           AND wp.PartGroup1Code = 'CashCenter'
-   ) c
-   LEFT JOIN (
-       SELECT
-           vsp.wwarehousepartid,
-           vsp.usage as usage_${day1Label},
-           vsp.dlt,
-           ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-       FROM ${schema}.vvsimulationprojection vsp
-       JOIN ${schema}.vvwarehouseparts wp ON vsp.wwarehousepartid = wp.wwarehousepartid
-       WHERE vsp.importdatetime = '${formatDateForSQL(day1)}'
-           AND wp.partcode != 'BIN'
-           AND wp.PartGroup1Code = 'CashCenter'
-   ) a ON c.wwarehousepartid = a.wwarehousepartid AND a.rn = 1
-   LEFT JOIN (
-       SELECT
-           vsp.wwarehousepartid,
-           vsp.usage as usage_${day2Label},
-           ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-       FROM ${schema}.vvsimulationprojection vsp
-       JOIN ${schema}.vvwarehouseparts wp ON vsp.wwarehousepartid = wp.wwarehousepartid
-       WHERE vsp.importdatetime = '${formatDateForSQL(day2)}'
-           AND wp.partcode != 'BIN'
-           AND wp.PartGroup1Code = 'CashCenter'
-   ) b ON c.wwarehousepartid = b.wwarehousepartid AND b.rn = 1
-   WHERE c.rn = 1
+-- First, let's get the data for each day separately
+WITH ${day3Label}_data AS (
+    SELECT
+        vsp.wwarehousepartid,
+        vsp.usage as usage_${day3Label},
+        wp.warehousecode,
+        wp.partcode,
+        wp.PartGroup1Code,
+        ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
+    FROM ${schema}.vvsimulationprojection vsp
+    JOIN ${schema}.vvwarehouseparts wp 
+        ON vsp.wwarehousepartid = wp.wwarehousepartid
+    WHERE vsp.importdatetime = '${formatDateForSQL(day3)}'
+        AND wp.partcode != 'BIN'
+        AND wp.PartGroup1Code = 'CashCenter'
+),
+${day1Label}_data AS (
+    SELECT
+        vsp.wwarehousepartid,
+        vsp.usage as usage_${day1Label},
+        vsp.dlt,
+        ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
+    FROM ${schema}.vvsimulationprojection vsp
+    JOIN ${schema}.vvwarehouseparts wp 
+        ON vsp.wwarehousepartid = wp.wwarehousepartid
+    WHERE vsp.importdatetime = '${formatDateForSQL(day1)}'
+        AND wp.partcode != 'BIN'
+        AND wp.PartGroup1Code = 'CashCenter'
+),
+${day2Label}_data AS (
+    SELECT
+        vsp.wwarehousepartid,
+        vsp.usage as usage_${day2Label},
+        ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
+    FROM ${schema}.vvsimulationprojection vsp
+    JOIN ${schema}.vvwarehouseparts wp 
+        ON vsp.wwarehousepartid = wp.wwarehousepartid
+    WHERE vsp.importdatetime = '${formatDateForSQL(day2)}'
+        AND wp.partcode != 'BIN'
+        AND wp.PartGroup1Code = 'CashCenter'
+),
+base_query AS (
+    SELECT
+        c.warehousecode,
+        c.partcode,
+        c.PartGroup1Code,
+        c.wwarehousepartid,
+        COALESCE(a.usage_${day1Label}, 0) as usage_${day1.replace(/-/g, '_')},
+        COALESCE(b.usage_${day2Label}, 0) as usage_${day2.replace(/-/g, '_')},
+        COALESCE(c.usage_${day3Label}, 0) as usage_${day3.replace(/-/g, '_')},
+        ROUND(((COALESCE(a.usage_${day1Label}, 0) + COALESCE(b.usage_${day2Label}, 0)) / 2.0) + 
+              ((COALESCE(b.usage_${day2Label}, 0) + COALESCE(c.usage_${day3Label}, 0)) / 2.0)) as quantity,
+        'Anticipation' as AnticipationZoneName,
+        COALESCE(a.dlt, 0) as dlt
+    FROM ${day3Label}_data c
+    LEFT JOIN ${day1Label}_data a 
+        ON c.wwarehousepartid = a.wwarehousepartid 
+        AND a.rn = 1
+    LEFT JOIN ${day2Label}_data b 
+        ON c.wwarehousepartid = b.wwarehousepartid 
+        AND b.rn = 1
+    WHERE c.rn = 1
+),
+thursday_rows AS (
+    SELECT
+        warehousecode,
+        partcode,
+        PartGroup1Code,
+        wwarehousepartid,
+        usage_${day1.replace(/-/g, '_')},
+        usage_${day2.replace(/-/g, '_')},
+        usage_${day3.replace(/-/g, '_')},
+        quantity,
+        AnticipationZoneName,
+        dlt,
+        CASE 
+            WHEN dlt = 0 THEN '${thursdayDate}'
+            WHEN dlt = 1 THEN '${addBusinessDays(thursdayDate, 1)}'
+            WHEN dlt = 2 THEN '${addBusinessDays(thursdayDate, 2)}'
+            WHEN dlt = 3 THEN '${addBusinessDays(thursdayDate, 3)}'
+            ELSE '${addBusinessDays(thursdayDate, 1)}'
+        END as Date
+    FROM base_query
+),
+friday_rows AS (
+    SELECT
+        warehousecode,
+        partcode,
+        PartGroup1Code,
+        wwarehousepartid,
+        usage_${day1.replace(/-/g, '_')},
+        usage_${day2.replace(/-/g, '_')},
+        usage_${day3.replace(/-/g, '_')},
+        quantity,
+        AnticipationZoneName,
+        dlt,
+        CASE 
+            WHEN dlt = 0 THEN '${fridayDate}'
+            WHEN dlt = 1 THEN '${addBusinessDays(fridayDate, 1)}'
+            WHEN dlt = 2 THEN '${addBusinessDays(fridayDate, 2)}'
+            WHEN dlt = 3 THEN '${addBusinessDays(fridayDate, 3)}'
+            ELSE '${addBusinessDays(fridayDate, 1)}'
+        END as Date
+    FROM base_query
 )
-SELECT * FROM (
-   SELECT
-       warehousecode,
-       partcode,
-       PartGroup1Code,
-       wwarehousepartid,
-       usage_${day1.replace(/-/g, '_')},
-       usage_${day2.replace(/-/g, '_')},
-       usage_${day3.replace(/-/g, '_')},
-       quantity,
-       AnticipationZoneName,
-       dlt,
-       -- 📅 Thursday + DLT business days
-       CASE 
-           WHEN dlt = 0 THEN '${thursdayDate}'
-           WHEN dlt = 1 THEN '${addBusinessDays(thursdayDate, 1)}'
-           WHEN dlt = 2 THEN '${addBusinessDays(thursdayDate, 2)}'
-           WHEN dlt = 3 THEN '${addBusinessDays(thursdayDate, 3)}'
-           ELSE '${addBusinessDays(thursdayDate, 1)}'
-       END as Date
-   FROM base_query
-   
-   UNION ALL
-   
-   SELECT
-       warehousecode,
-       partcode,
-       PartGroup1Code,
-       wwarehousepartid,
-       usage_${day1.replace(/-/g, '_')},
-       usage_${day2.replace(/-/g, '_')},
-       usage_${day3.replace(/-/g, '_')},
-       quantity,
-       AnticipationZoneName,
-       dlt,
-       -- 📅 Friday + DLT business days
-       CASE 
-           WHEN dlt = 0 THEN '${fridayDate}'
-           WHEN dlt = 1 THEN '${addBusinessDays(fridayDate, 1)}'
-           WHEN dlt = 2 THEN '${addBusinessDays(fridayDate, 2)}'
-           WHEN dlt = 3 THEN '${addBusinessDays(fridayDate, 3)}'
-           ELSE '${addBusinessDays(fridayDate, 1)}'
-       END as Date
-   FROM base_query
-) combined_results
+SELECT * FROM thursday_rows
+UNION ALL
+SELECT * FROM friday_rows
 ORDER BY warehousecode, partcode, Date;
 
 -- ====================================================================
@@ -1323,253 +1530,35 @@ ORDER BY warehousecode, partcode, Date;
 -- ====================================================================
 
 WITH ${day1Label}_usage AS (
-   SELECT
-       vsp.wwarehousepartid,
-       vsp.usage as usage_${day1Label},
-       vsp.dlt,
-       ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-   FROM ${schema}.vvsimulationprojection vsp
-   JOIN ${schema}.vvwarehouseparts wp
-       ON vsp.wwarehousepartid = wp.wwarehousepartid
-   WHERE vsp.importdatetime = '${formatDateForSQL(day1)}'
-       AND wp.partcode != 'BIN'
-       AND wp.PartGroup1Code = 'CashCenter'  -- 💰 CashCenter records only
+    SELECT
+        vsp.wwarehousepartid,
+        vsp.usage as usage_${day1Label},
+        vsp.dlt,
+        ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
+    FROM ${schema}.vvsimulationprojection vsp
+    JOIN ${schema}.vvwarehouseparts wp
+        ON vsp.wwarehousepartid = wp.wwarehousepartid
+    WHERE vsp.importdatetime = '${formatDateForSQL(day1)}'
+        AND wp.partcode != 'BIN'
+        AND wp.PartGroup1Code = 'CashCenter'  -- 💰 CashCenter records only
 ),
 ${day2Label}_usage AS (
-   SELECT
-       vsp.wwarehousepartid,
-       vsp.usage as usage_${day2Label},
-       ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-   FROM ${schema}.vvsimulationprojection vsp
-   JOIN ${schema}.vvwarehouseparts wp
-       ON vsp.wwarehousepartid = wp.wwarehousepartid
-   WHERE vsp.importdatetime = '${formatDateForSQL(day2)}'
-       AND wp.partcode != 'BIN'
-       AND wp.PartGroup1Code = 'CashCenter'  -- 💰 CashCenter records only
+    SELECT
+        vsp.wwarehousepartid,
+        vsp.usage as usage_${day2Label},
+        ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
+    FROM ${schema}.vvsimulationprojection vsp
+    JOIN ${schema}.vvwarehouseparts wp
+        ON vsp.wwarehousepartid = wp.wwarehousepartid
+    WHERE vsp.importdatetime = '${formatDateForSQL(day2)}'
+        AND wp.partcode != 'BIN'
+        AND wp.PartGroup1Code = 'CashCenter'  -- 💰 CashCenter records only
 ),
 ${day3Label}_usage AS (
-   SELECT
-       vsp.wwarehousepartid,
-       vsp.usage as usage_${day3Label},
-       wp.warehousecode,
-       wp.partcode,
-       wp.PartGroup1Code,
-       ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-   FROM ${schema}.vvsimulationprojection vsp
-   JOIN ${schema}.vvwarehouseparts wp
-       ON vsp.wwarehousepartid = wp.wwarehousepartid
-   WHERE vsp.importdatetime = '${formatDateForSQL(day3)}'
-       AND wp.partcode != 'BIN'
-       AND wp.PartGroup1Code = 'CashCenter'  -- 💰 CashCenter records only
-)
-SELECT
-   c.warehousecode,
-   c.partcode,
-   c.PartGroup1Code,
-   c.wwarehousepartid,
-   COALESCE(a.usage_${day1Label}, 0) as usage_${day1.replace(/-/g, '_')},
-   COALESCE(b.usage_${day2Label}, 0) as usage_${day2.replace(/-/g, '_')},
-   COALESCE(c.usage_${day3Label}, 0) as usage_${day3.replace(/-/g, '_')},
-   -- 📊 Advanced Quantity Calculation: ((Day1 + Day2) / 2) + ((Day2 + Day3) / 2)
-   ROUND(((COALESCE(a.usage_${day1Label}, 0) + COALESCE(b.usage_${day2Label}, 0)) / 2.0) + 
-         ((COALESCE(b.usage_${day2Label}, 0) + COALESCE(c.usage_${day3Label}, 0)) / 2.0)) as quantity,
-   'Anticipation' as AnticipationZoneName,
-   COALESCE(a.dlt, 0) as dlt,
-   -- 📅 Business Day Calculations: Thursday + DLT, Friday + DLT (skip weekends)
-   CASE 
-       WHEN COALESCE(a.dlt, 0) = 0 THEN '${thursdayDate}'
-       WHEN COALESCE(a.dlt, 0) = 1 THEN 
-           CASE WHEN DAYOFWEEK(DATE_ADD(DATE('${thursdayDate}'), INTERVAL 1 DAY)) = 7 
-                THEN DATE_ADD(DATE('${thursdayDate}'), INTERVAL 3 DAY)  -- Skip Sat to Mon
-                ELSE DATE_ADD(DATE('${thursdayDate}'), INTERVAL 1 DAY)
-           END
-       WHEN COALESCE(a.dlt, 0) = 2 THEN 
-           CASE WHEN DAYOFWEEK(DATE_ADD(DATE('${thursdayDate}'), INTERVAL 1 DAY)) = 7 
-                THEN DATE_ADD(DATE('${thursdayDate}'), INTERVAL 4 DAY)  -- Skip Sat/Sun to Tue
-                ELSE DATE_ADD(DATE('${thursdayDate}'), INTERVAL 2 DAY)
-           END
-       ELSE DATE_ADD(DATE('${thursdayDate}'), INTERVAL COALESCE(a.dlt, 0) DAY)
-   END as Date,
-   CASE 
-       WHEN COALESCE(a.dlt, 0) = 0 THEN '${fridayDate}'
-       WHEN COALESCE(a.dlt, 0) = 1 THEN 
-           CASE WHEN DAYOFWEEK(DATE_ADD(DATE('${fridayDate}'), INTERVAL 1 DAY)) = 1 
-                THEN DATE_ADD(DATE('${fridayDate}'), INTERVAL 2 DAY)  -- Skip Sun to Mon
-                ELSE DATE_ADD(DATE('${fridayDate}'), INTERVAL 1 DAY)
-           END
-       WHEN COALESCE(a.dlt, 0) = 2 THEN 
-           CASE WHEN DAYOFWEEK(DATE_ADD(DATE('${fridayDate}'), INTERVAL 1 DAY)) = 1 
-                THEN DATE_ADD(DATE('${fridayDate}'), INTERVAL 3 DAY)  -- Skip Sun to Tue
-                ELSE DATE_ADD(DATE('${fridayDate}'), INTERVAL 2 DAY)
-           END
-       ELSE DATE_ADD(DATE('${fridayDate}'), INTERVAL COALESCE(a.dlt, 0) DAY)
-   END as date2
-FROM ${day3Label}_usage c
-LEFT JOIN ${day1Label}_usage a
-   ON c.wwarehousepartid = a.wwarehousepartid
-   AND a.rn = 1
-LEFT JOIN ${day2Label}_usage b
-   ON c.wwarehousepartid = b.wwarehousepartid
-   AND b.rn = 1
-WHERE c.rn = 1
-ORDER BY c.warehousecode, c.partcode;
-
--- ====================================================================
--- 📋 CONFIGURATION SUMMARY
--- ====================================================================
--- Import Date: ${importDate} (Saturday)
--- Day 1: ${day1} (Saturday - Import Date)
--- Day 2: ${day2} (Sunday - Import Date + 1) 
--- Day 3: ${day3} (Monday - Import Date + 2)
--- Thursday: ${thursdayDate} (Import Date - 2)
--- Friday: ${fridayDate} (Import Date - 1)
--- Schema: ${schema}
--- Filter: CashCenter records exclusively
--- Usage Logic: Consecutive days Sat→Sun→Mon
--- Quantity Logic: ((Day1 + Day2) / 2) + ((Day2 + Day3) / 2) - Rolling average
--- Date Field: Thursday + DLT business days (skip weekends)
--- Date2 Field: Friday + DLT business days (skip weekends)
--- Business Day Logic: Saturday/Sunday are skipped in DLT calculation
--- ====================================================================`;
-            }
-
-            document.getElementById('sqlOutput').textContent = generatedSQL;
-        }
-
-        function copyToClipboard() {
-            if (!generatedSQL) {
-                showCustomNotification('⚠️ Please generate SQL first!', '#fa709a');
-                return;
-            }
-
-            navigator.clipboard.writeText(generatedSQL).then(() => {
-                showNotification();
-                // Add celebration effect
-                createConfetti();
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-                const textArea = document.createElement('textarea');
-                textArea.value = generatedSQL;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                showNotification();
-                createConfetti();
-            });
-        }
-
-        function showNotification() {
-            const notification = document.getElementById('copyNotification');
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        function showCustomNotification(message, color) {
-            const notification = document.getElementById('copyNotification');
-            const originalText = notification.innerHTML;
-            const originalBg = notification.style.background;
-            
-            notification.innerHTML = message;
-            notification.style.background = color;
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-                notification.innerHTML = originalText;
-                notification.style.background = originalBg;
-            }, 3000);
-        }
-
-        function createConfetti() {
-            const colors = ['#667eea', '#764ba2', '#4facfe', '#43e97b', '#fa709a'];
-            for (let i = 0; i < 20; i++) {
-                setTimeout(() => {
-                    const confetti = document.createElement('div');
-                    confetti.innerHTML = '🎉';
-                    confetti.style.position = 'fixed';
-                    confetti.style.left = Math.random() * window.innerWidth + 'px';
-                    confetti.style.top = '-20px';
-                    confetti.style.fontSize = '20px';
-                    confetti.style.pointerEvents = 'none';
-                    confetti.style.zIndex = '10000';
-                    confetti.style.transition = 'all 3s ease-out';
-                    document.body.appendChild(confetti);
-                    
-                    setTimeout(() => {
-                        confetti.style.top = window.innerHeight + 'px';
-                        confetti.style.transform = 'rotate(720deg)';
-                        confetti.style.opacity = '0';
-                    }, 100);
-                    
-                    setTimeout(() => {
-                        if (confetti.parentNode) {
-                            confetti.parentNode.removeChild(confetti);
-                        }
-                    }, 3000);
-                }, i * 100);
-            }
-        }
-
-        function downloadSQL() {
-            if (!generatedSQL) {
-                showCustomNotification('⚠️ Please generate SQL first!', '#fa709a');
-                return;
-            }
-
-            const mode = currentMode === 'devices' ? 'devices' : 'cashcentres';
-            const date = currentMode === 'devices' ? 
-                document.getElementById('importDate').value : 
-                document.getElementById('ccImportDate').value;
-            const timestamp = new Date().toISOString().slice(0,16).replace(/:/g,'');
-            const filename = `warehouse_${mode}_${date}_${timestamp}.sql`;
-
-            const blob = new Blob([generatedSQL], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            
-            showCustomNotification(`💾 Downloaded: ${filename}`, '#43e97b');
-        }
-
-        // Add event listeners for automatic updates
-        document.addEventListener('change', function(e) {
-            if (e.target.matches('#usageDate1, #usageDate2, #importDate, #schema')) {
-                updatePreview();
-                generateSQL();
-            }
-        });
-
-        // Add keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey || e.metaKey) {
-                switch(e.key) {
-                    case 'g':
-                        e.preventDefault();
-                        generateSQL();
-                        break;
-                    case 'c':
-                        if (e.shiftKey) {
-                            e.preventDefault();
-                            copyToClipboard();
-                        }
-                        break;
-                    case 's':
-                        if (e.shiftKey) {
-                            e.preventDefault();
-                            downloadSQL();
-                        }
-                        break;
-                }
-            }
-        });
-    </script>
-</body>
-</html>
+    SELECT
+        vsp.wwarehousepartid,
+        vsp.usage as usage_${day3Label},
+        wp.warehousecode,
+        wp.partcode,
+        wp.PartGroup1Code,
+        ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as
