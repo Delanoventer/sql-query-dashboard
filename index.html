@@ -1181,7 +1181,7 @@ ORDER BY b.warehousecode, b.partcode;
             const day3Label = getDateLabel(day3);
 
             if (duplicateRows) {
-                // Generate query with duplicate rows using CROSS JOIN
+                // Generate query with duplicate rows using the working Athena structure
                 const thursdayDate = getThursdayFromSaturday(importDate);
                 const fridayDate = getFridayFromSaturday(importDate);
                 
@@ -1193,97 +1193,104 @@ ORDER BY b.warehousecode, b.partcode;
 -- Schema: ${schema}
 -- ====================================================================
 
-WITH ${day1Label}_usage AS (
+WITH base_query AS (
    SELECT
-       vsp.wwarehousepartid,
-       vsp.usage as usage_${day1Label},
-       vsp.dlt,
-       ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-   FROM ${schema}.vvsimulationprojection vsp
-   JOIN ${schema}.vvwarehouseparts wp
-       ON vsp.wwarehousepartid = wp.wwarehousepartid
-   WHERE vsp.importdatetime = '${formatDateForSQL(day1)}'
-       AND wp.partcode != 'BIN'
-       AND wp.PartGroup1Code = 'CashCenter'  -- 💰 CashCenter records only
-),
-${day2Label}_usage AS (
-   SELECT
-       vsp.wwarehousepartid,
-       vsp.usage as usage_${day2Label},
-       ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-   FROM ${schema}.vvsimulationprojection vsp
-   JOIN ${schema}.vvwarehouseparts wp
-       ON vsp.wwarehousepartid = wp.wwarehousepartid
-   WHERE vsp.importdatetime = '${formatDateForSQL(day2)}'
-       AND wp.partcode != 'BIN'
-       AND wp.PartGroup1Code = 'CashCenter'  -- 💰 CashCenter records only
-),
-${day3Label}_usage AS (
-   SELECT
-       vsp.wwarehousepartid,
-       vsp.usage as usage_${day3Label},
-       wp.warehousecode,
-       wp.partcode,
-       wp.PartGroup1Code,
-       ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-   FROM ${schema}.vvsimulationprojection vsp
-   JOIN ${schema}.vvwarehouseparts wp
-       ON vsp.wwarehousepartid = wp.wwarehousepartid
-   WHERE vsp.importdatetime = '${formatDateForSQL(day3)}'
-       AND wp.partcode != 'BIN'
-       AND wp.PartGroup1Code = 'CashCenter'  -- 💰 CashCenter records only
-),
-date_options AS (
-   SELECT 
-       CASE 
-           WHEN COALESCE(a.dlt, 0) = 0 THEN '${thursdayDate}'
-           ELSE DATE_ADD(DATE('${thursdayDate}'), INTERVAL 
-               CASE 
-                   WHEN DAYOFWEEK(DATE_ADD(DATE('${thursdayDate}'), INTERVAL COALESCE(a.dlt, 0) DAY)) IN (1,7) 
-                   THEN COALESCE(a.dlt, 0) + 2 
-                   ELSE COALESCE(a.dlt, 0) 
-               END DAY)
-       END as date_field,
-       'thursday_plus_dlt' as date_type
-   FROM ${day1Label}_usage a WHERE a.rn = 1
-   UNION ALL
-   SELECT 
-       CASE 
-           WHEN COALESCE(a.dlt, 0) = 0 THEN '${fridayDate}'
-           ELSE DATE_ADD(DATE('${fridayDate}'), INTERVAL 
-               CASE 
-                   WHEN DAYOFWEEK(DATE_ADD(DATE('${fridayDate}'), INTERVAL COALESCE(a.dlt, 0) DAY)) IN (1,7) 
-                   THEN COALESCE(a.dlt, 0) + 2 
-                   ELSE COALESCE(a.dlt, 0) 
-               END DAY)
-       END as date_field,
-       'friday_plus_dlt' as date_type
-   FROM ${day1Label}_usage a WHERE a.rn = 1
+       c.warehousecode,
+       c.partcode,
+       c.PartGroup1Code,
+       c.wwarehousepartid,
+       COALESCE(a.usage_${day1Label}, 0) as usage_${day1.replace(/-/g, '_')},
+       COALESCE(b.usage_${day2Label}, 0) as usage_${day2.replace(/-/g, '_')},
+       COALESCE(c.usage_${day3Label}, 0) as usage_${day3.replace(/-/g, '_')},
+       ROUND(((COALESCE(a.usage_${day1Label}, 0) + COALESCE(b.usage_${day2Label}, 0)) / 2.0) + 
+             ((COALESCE(b.usage_${day2Label}, 0) + COALESCE(c.usage_${day3Label}, 0)) / 2.0)) as quantity,
+       'Anticipation' as AnticipationZoneName,
+       COALESCE(a.dlt, 0) as dlt
+   FROM (
+       SELECT
+           vsp.wwarehousepartid,
+           vsp.usage as usage_${day3Label},
+           wp.warehousecode,
+           wp.partcode,
+           wp.PartGroup1Code,
+           ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
+       FROM ${schema}.vvsimulationprojection vsp
+       JOIN ${schema}.vvwarehouseparts wp ON vsp.wwarehousepartid = wp.wwarehousepartid
+       WHERE vsp.importdatetime = '${formatDateForSQL(day3)}'
+           AND wp.partcode != 'BIN'
+           AND wp.PartGroup1Code = 'CashCenter'
+   ) c
+   LEFT JOIN (
+       SELECT
+           vsp.wwarehousepartid,
+           vsp.usage as usage_${day1Label},
+           vsp.dlt,
+           ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
+       FROM ${schema}.vvsimulationprojection vsp
+       JOIN ${schema}.vvwarehouseparts wp ON vsp.wwarehousepartid = wp.wwarehousepartid
+       WHERE vsp.importdatetime = '${formatDateForSQL(day1)}'
+           AND wp.partcode != 'BIN'
+           AND wp.PartGroup1Code = 'CashCenter'
+   ) a ON c.wwarehousepartid = a.wwarehousepartid AND a.rn = 1
+   LEFT JOIN (
+       SELECT
+           vsp.wwarehousepartid,
+           vsp.usage as usage_${day2Label},
+           ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
+       FROM ${schema}.vvsimulationprojection vsp
+       JOIN ${schema}.vvwarehouseparts wp ON vsp.wwarehousepartid = wp.wwarehousepartid
+       WHERE vsp.importdatetime = '${formatDateForSQL(day2)}'
+           AND wp.partcode != 'BIN'
+           AND wp.PartGroup1Code = 'CashCenter'
+   ) b ON c.wwarehousepartid = b.wwarehousepartid AND b.rn = 1
+   WHERE c.rn = 1
 )
-SELECT
-   c.warehousecode,
-   c.partcode,
-   c.PartGroup1Code,
-   c.wwarehousepartid,
-   COALESCE(a.usage_${day1Label}, 0) as usage_${day1.replace(/-/g, '_')},
-   COALESCE(b.usage_${day2Label}, 0) as usage_${day2.replace(/-/g, '_')},
-   COALESCE(c.usage_${day3Label}, 0) as usage_${day3.replace(/-/g, '_')},
-   -- 📊 Advanced Quantity Calculation: ((Day1 + Day2) / 2) + ((Day2 + Day3) / 2)
-   ROUND(((COALESCE(a.usage_${day1Label}, 0) + COALESCE(b.usage_${day2Label}, 0)) / 2.0) + 
-         ((COALESCE(b.usage_${day2Label}, 0) + COALESCE(c.usage_${day3Label}, 0)) / 2.0)) as quantity,
-   'Anticipation' as AnticipationZoneName,
-   COALESCE(a.dlt, 0) as dlt,
-   d.date_field as Date
-FROM ${day3Label}_usage c
-LEFT JOIN ${day1Label}_usage a
-   ON c.wwarehousepartid = a.wwarehousepartid
-   AND a.rn = 1
-LEFT JOIN ${day2Label}_usage b
-   ON c.wwarehousepartid = b.wwarehousepartid
-   AND b.rn = 1
-CROSS JOIN date_options d
-WHERE c.rn = 1
-ORDER BY c.warehousecode, c.partcode, d.date_field;
+SELECT * FROM (
+   SELECT
+       warehousecode,
+       partcode,
+       PartGroup1Code,
+       wwarehousepartid,
+       usage_${day1.replace(/-/g, '_')},
+       usage_${day2.replace(/-/g, '_')},
+       usage_${day3.replace(/-/g, '_')},
+       quantity,
+       AnticipationZoneName,
+       dlt,
+       -- 📅 Thursday + DLT business days
+       CASE 
+           WHEN dlt = 0 THEN '${thursdayDate}'
+           WHEN dlt = 1 THEN '${addBusinessDays(thursdayDate, 1)}'
+           WHEN dlt = 2 THEN '${addBusinessDays(thursdayDate, 2)}'
+           WHEN dlt = 3 THEN '${addBusinessDays(thursdayDate, 3)}'
+           ELSE '${addBusinessDays(thursdayDate, 1)}'
+       END as Date
+   FROM base_query
+   
+   UNION ALL
+   
+   SELECT
+       warehousecode,
+       partcode,
+       PartGroup1Code,
+       wwarehousepartid,
+       usage_${day1.replace(/-/g, '_')},
+       usage_${day2.replace(/-/g, '_')},
+       usage_${day3.replace(/-/g, '_')},
+       quantity,
+       AnticipationZoneName,
+       dlt,
+       -- 📅 Friday + DLT business days
+       CASE 
+           WHEN dlt = 0 THEN '${fridayDate}'
+           WHEN dlt = 1 THEN '${addBusinessDays(fridayDate, 1)}'
+           WHEN dlt = 2 THEN '${addBusinessDays(fridayDate, 2)}'
+           WHEN dlt = 3 THEN '${addBusinessDays(fridayDate, 3)}'
+           ELSE '${addBusinessDays(fridayDate, 1)}'
+       END as Date
+   FROM base_query
+) combined_results
+ORDER BY warehousecode, partcode, Date;
 
 -- ====================================================================
 -- 📋 CONFIGURATION SUMMARY
@@ -1299,8 +1306,8 @@ ORDER BY c.warehousecode, c.partcode, d.date_field;
 -- Usage Logic: Consecutive days Sat→Sun→Mon
 -- Quantity Logic: ((Day1 + Day2) / 2) + ((Day2 + Day3) / 2) - Rolling average
 -- Duplicate Rows: Enabled - Each record appears twice
--- Date Calculation: Thursday + DLT business days, Friday + DLT business days
--- Business Days: Skip weekends (Sat/Sun) in DLT calculation
+-- Date Calculation: Thursday + DLT and Friday + DLT (business days)
+-- Business Day Logic: Saturday/Sunday are skipped in DLT calculation
 -- ====================================================================`;
             } else {
                 // Generate normal query without duplicates
