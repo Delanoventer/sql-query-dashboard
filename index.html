@@ -298,6 +298,8 @@
             font-size: 1.1rem;
             position: relative;
             overflow: hidden;
+            user-select: none;
+            pointer-events: all;
         }
 
         .toggle-option::before {
@@ -835,11 +837,11 @@
             <div class="mode-section">
                 <h3>Query Mode Selection</h3>
                 <div class="mode-toggle">
-                    <div class="toggle-option active pulse" onclick="switchMode('devices')">
+                    <div class="toggle-option active pulse" data-mode="devices">
                         <input type="radio" name="mode" value="devices" checked>
                         <span>📦 Devices Analysis</span>
                     </div>
-                    <div class="toggle-option" onclick="switchMode('cashcentres')">
+                    <div class="toggle-option" data-mode="cashcentres">
                         <input type="radio" name="mode" value="cashcentres">
                         <span>💰 Cash Centres Analysis</span>
                     </div>
@@ -1036,7 +1038,13 @@ Click "Generate SQL" to create your customized, enterprise-grade query...
                 btn.addEventListener('mouseenter', createSparkles);
             });
 
-            // Add input change listeners
+            // Add click listeners for toggle options
+            document.querySelectorAll('.toggle-option').forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    const mode = this.getAttribute('data-mode');
+                    switchMode(mode, e);
+                });
+            });
             document.addEventListener('change', function(e) {
                 if (e.target.matches('#usageDate1, #usageDate2, #importDate, #schema, #ccImportDate')) {
                     updatePreview();
@@ -1098,14 +1106,22 @@ Click "Generate SQL" to create your customized, enterprise-grade query...
             }
         }
 
-        function switchMode(mode) {
+        function switchMode(mode, event) {
             currentMode = mode;
             const dashboard = document.getElementById('dashboard');
             const toggles = document.querySelectorAll('.toggle-option');
             
             // Update visual state
             toggles.forEach(toggle => toggle.classList.remove('active', 'pulse'));
-            event.currentTarget.classList.add('active', 'pulse');
+            
+            // Activate the clicked toggle
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active', 'pulse');
+            } else {
+                // Fallback method
+                const activeToggle = document.querySelector(`.toggle-option input[value="${mode}"]`).parentElement;
+                activeToggle.classList.add('active', 'pulse');
+            }
             
             // Update radio button
             document.querySelector(`input[value="${mode}"]`).checked = true;
