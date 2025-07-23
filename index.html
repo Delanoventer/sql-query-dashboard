@@ -3,1661 +3,278 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQL Query Generator Pro ⚡</title>
+    <title>Excel to CSV with Date Formatting</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-            --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-            --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            --shadow-glow: 0 0 30px rgba(102, 126, 234, 0.3);
-        }
-
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            min-height: 100vh;
-            padding: 20px;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        /* Animated Background Particles */
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .particle {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            animation: float-particle 20s infinite linear;
-        }
-
-        @keyframes float-particle {
-            from {
-                transform: translateY(100vh) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            to {
-                transform: translateY(-100px) rotate(720deg);
-                opacity: 0;
-            }
-        }
-
-        .container {
-            max-width: 1400px;
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
             margin: 0 auto;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            box-shadow: var(--shadow-xl);
-            overflow: hidden;
-            position: relative;
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--primary-gradient);
-            opacity: 0.8;
-        }
-
-        .header {
-            background: var(--dark-gradient);
-            color: white;
-            padding: 40px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.1), transparent);
-            animation: rotate 20s linear infinite;
-            pointer-events: none;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .header-content {
-            position: relative;
-            z-index: 2;
-        }
-
-        .header h1 {
-            font-size: 3.5rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-            background: linear-gradient(45deg, #fff, #f0f0f0, #fff);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: shimmer 3s ease-in-out infinite;
-        }
-
-        @keyframes shimmer {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 1.2rem;
-            font-weight: 300;
-        }
-
-        .header-stats {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 10px;
-            animation: slideUp 0.6s ease-out forwards;
-            opacity: 0;
-        }
-
-        .stat-item:nth-child(1) { animation-delay: 0.1s; }
-        .stat-item:nth-child(2) { animation-delay: 0.2s; }
-        .stat-item:nth-child(3) { animation-delay: 0.3s; }
-
-        @keyframes slideUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-        }
-
-        .stat-number {
-            display: block;
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #4facfe;
-            transition: all 0.3s ease;
-        }
-
-        .stat-number.animate {
-            transform: scale(1.2);
-            color: #00f2fe;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        .dashboard {
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-        }
-
-        .mode-section {
-            background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.1));
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(79, 172, 254, 0.2);
-            position: relative;
-            overflow: hidden;
-            animation: slideIn 0.6s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .mode-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            animation: slide 3s infinite;
-        }
-
-        @keyframes slide {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
-        .mode-section h3 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 1.4rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            position: relative;
-            z-index: 2;
-        }
-
-        .mode-section h3::before {
-            content: "🔄";
-            margin-right: 12px;
-            font-size: 1.5rem;
-            animation: spin 4s linear infinite;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .mode-toggle {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            position: relative;
-            z-index: 2;
-        }
-
-        .toggle-option {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px 24px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 2px solid rgba(102, 126, 234, 0.2);
-            background: rgba(255, 255, 255, 0.8);
-            font-weight: 600;
-            font-size: 1.1rem;
-            position: relative;
-            overflow: hidden;
-            user-select: none;
-            pointer-events: all;
-        }
-
-        .toggle-option::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: var(--primary-gradient);
-            transition: left 0.4s ease;
-            z-index: -1;
-        }
-
-        .toggle-option.active {
-            color: white;
-            border-color: #667eea;
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: var(--shadow-glow);
-        }
-
-        .toggle-option.active::before {
-            left: 0;
-        }
-
-        .toggle-option:hover:not(.active) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
-        }
-
-        .toggle-option input {
-            margin: 0;
-            opacity: 0;
-            position: absolute;
-        }
-
-        .info-box {
-            background: linear-gradient(135deg, rgba(255, 243, 205, 0.9), rgba(255, 234, 167, 0.9));
-            border: 1px solid rgba(255, 193, 7, 0.3);
-            border-radius: 12px;
-            padding: 16px;
-            margin-top: 20px;
-            font-size: 0.95rem;
-            color: #856404;
-            position: relative;
-            z-index: 2;
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        .config-section {
-            background: linear-gradient(135deg, rgba(248, 249, 250, 0.9), rgba(255, 255, 255, 0.9));
-            border-radius: 16px;
-            padding: 35px;
-            margin-bottom: 30px;
-            border-left: 4px solid #667eea;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            position: relative;
-            animation: slideIn 0.6s ease-out 0.2s both;
-        }
-
-        .config-section h2 {
-            color: #2c3e50;
-            margin-bottom: 25px;
-            font-size: 1.6rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-        }
-
-        .config-section h2::before {
-            content: "⚙️";
-            margin-right: 12px;
-            font-size: 1.4rem;
-            animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 25px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        .form-group label {
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 1rem;
-            transition: color 0.3s ease;
-        }
-
-        .form-group input, .form-group select {
-            padding: 16px 20px;
-            border: 2px solid rgba(102, 126, 234, 0.2);
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-        }
-
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .form-group input:disabled {
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            color: #6c757d;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        .form-group small {
-            color: #666;
-            margin-top: 5px;
-            font-size: 0.85rem;
-            opacity: 0.8;
-        }
-
-        .actions {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-top: 30px;
-        }
-
-        .btn {
-            padding: 16px 32px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            position: relative;
-            overflow: hidden;
-            min-width: 160px;
-            justify-content: center;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.6s;
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn-primary {
-            background: var(--primary-gradient);
-            color: white;
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: var(--success-gradient);
-            color: white;
-            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
-        }
-
-        .btn-secondary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(79, 172, 254, 0.4);
-        }
-
-        .btn-tertiary {
-            background: var(--warning-gradient);
-            color: white;
-            box-shadow: 0 8px 25px rgba(67, 233, 123, 0.3);
-        }
-
-        .btn-tertiary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(67, 233, 123, 0.4);
-        }
-
-        .result-section {
-            background: var(--dark-gradient);
-            border-radius: 16px;
-            padding: 30px;
-            margin-top: 30px;
-            position: relative;
-            overflow: hidden;
-            animation: slideIn 0.6s ease-out 0.4s both;
-        }
-
-        .result-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--primary-gradient);
-        }
-
-        .result-section h3 {
-            color: white;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.3rem;
-            font-weight: 600;
-        }
-
-        .sql-output {
-            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
-            border-radius: 12px;
-            padding: 25px;
-            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            color: #a8e6cf;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            max-height: 600px;
-            overflow-y: auto;
-            border: 1px solid rgba(168, 230, 207, 0.2);
-            position: relative;
-        }
-
-        .sql-output::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .sql-output::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-        }
-
-        .sql-output::-webkit-scrollbar-thumb {
-            background: var(--primary-gradient);
-            border-radius: 4px;
-        }
-
-        .copy-notification {
-            position: fixed;
-            top: 30px;
-            right: 30px;
-            background: var(--success-gradient);
-            color: white;
-            padding: 20px 25px;
-            border-radius: 12px;
-            font-weight: 600;
-            opacity: 0;
-            transform: translateX(100%) scale(0.8);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1000;
-            box-shadow: 0 15px 35px rgba(67, 233, 123, 0.3);
-        }
-
-        .copy-notification.show {
-            opacity: 1;
-            transform: translateX(0) scale(1);
-        }
-
-        .preview-section {
-            background: linear-gradient(135deg, rgba(240, 248, 255, 0.9), rgba(255, 255, 255, 0.9));
-            border-radius: 16px;
-            padding: 25px;
-            margin-top: 25px;
-            border-left: 4px solid #4facfe;
-            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.1);
-            animation: slideIn 0.6s ease-out 0.3s both;
-        }
-
-        .preview-section h3 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        .date-info {
-            background: rgba(255, 255, 255, 0.9);
             padding: 20px;
-            border-radius: 12px;
-            border: 1px solid rgba(79, 172, 254, 0.2);
-            backdrop-filter: blur(10px);
+            background-color: #f5f5f5;
         }
-
-        .date-info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .date-info-item {
-            text-align: center;
-            padding: 15px;
+        .container {
+            background: white;
             border-radius: 8px;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(116, 75, 162, 0.05));
-            transition: transform 0.3s ease;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-
-        .date-info-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
         }
-
-        .date-info-item strong {
-            display: block;
-            color: #2c3e50;
-            margin-bottom: 8px;
-            font-weight: 600;
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #fafafa;
         }
-
-        .date-info-item span {
-            color: #667eea;
-            font-weight: 600;
-            font-size: 1.1rem;
+        .upload-area.dragover {
+            border-color: #4CAF50;
+            background-color: #f0f8f0;
         }
-
-        .devices-mode {
-            display: block;
+        input[type="file"] {
+            margin: 20px 0;
         }
-
-        .cashcentres-mode {
-            display: none;
+        .results {
+            margin-top: 30px;
         }
-
-        .cashcentres-active .devices-mode {
-            display: none;
-        }
-
-        .cashcentres-active .cashcentres-mode {
-            display: block;
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .float {
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-
-        .glow {
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
-        }
-
-        /* Keyboard shortcuts help */
-        .shortcuts-help {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--dark-gradient);
-            color: white;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            opacity: 0.7;
-            transition: opacity 0.3s ease;
-            cursor: help;
-        }
-
-        .shortcuts-help:hover {
-            opacity: 1;
-        }
-
-        .shortcuts-help kbd {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 2px 6px;
+        .info {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
             border-radius: 4px;
-            font-family: 'JetBrains Mono', monospace;
-            margin: 0 2px;
+            padding: 15px;
+            margin-bottom: 20px;
         }
-
-        @media (max-width: 768px) {
-            .dashboard {
-                padding: 25px;
-            }
-            
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .actions {
-                flex-direction: column;
-            }
-            
-            .btn {
-                justify-content: center;
-                width: 100%;
-            }
-
-            .mode-toggle {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .toggle-option {
-                justify-content: center;
-            }
-
-            .header h1 {
-                font-size: 2.5rem;
-            }
-
-            .header-stats {
-                gap: 20px;
-            }
-
-            .shortcuts-help {
-                display: none;
-            }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #155724;
         }
-
-        /* Loading animation */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
+        .download-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
         }
-
-        /* Success checkmark animation */
-        .success-check {
-            width: 24px;
-            height: 24px;
-            display: inline-block;
-            position: relative;
+        .download-btn:hover {
+            background-color: #45a049;
         }
-
-        .success-check::before {
-            content: '✓';
-            position: absolute;
-            font-size: 20px;
-            animation: checkmark 0.6s ease-out;
+        .preview {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow: auto;
+            white-space: pre-wrap;
+            font-size: 12px;
         }
-
-        @keyframes checkmark {
-            0% {
-                transform: scale(0) rotate(-45deg);
-                opacity: 0;
-            }
-            50% {
-                transform: scale(1.2) rotate(-45deg);
-            }
-            100% {
-                transform: scale(1) rotate(0deg);
-                opacity: 1;
-            }
-        }
-
-        /* Error shake animation */
-        .error-shake {
-            animation: shake 0.5s ease-in-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
+        .stats {
+            font-size: 14px;
+            color: #666;
+            margin: 10px 0;
         }
     </style>
 </head>
 <body>
-    <!-- Animated particles background -->
-    <div class="particles" id="particles"></div>
-
     <div class="container">
-        <div class="header">
-            <div class="header-content">
-                <h1 class="float">SQL Query Generator Pro ⚡</h1>
-                <p>The ultimate warehouse analysis dashboard</p>
-                <div class="header-stats">
-                    <div class="stat-item">
-                        <span class="stat-number" id="queryCount">0</span>
-                        <span class="stat-label">Queries Generated</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">2</span>
-                        <span class="stat-label">Analysis Modes</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">∞</span>
-                        <span class="stat-label">Possibilities</span>
-                    </div>
-                </div>
-            </div>
+        <h1>Excel to CSV Converter with Column J Date Formatting</h1>
+        
+        <div class="info">
+            <strong>Purpose:</strong> This tool will convert your Excel file to a comma-delimited CSV file, formatting the dates in Column J (date2) to YYYY-MM-DD format while keeping all other data unchanged.
         </div>
 
-        <div class="dashboard" id="dashboard">
-            <!-- Mode Selection -->
-            <div class="mode-section">
-                <h3>Query Mode Selection</h3>
-                <div class="mode-toggle">
-                    <div class="toggle-option active pulse" data-mode="devices">
-                        <input type="radio" name="mode" value="devices" checked>
-                        <span>📦 Devices Analysis</span>
-                    </div>
-                    <div class="toggle-option" data-mode="cashcentres">
-                        <input type="radio" name="mode" value="cashcentres">
-                        <span>💰 Cash Centres Analysis</span>
-                    </div>
-                </div>
-                
-                <div class="info-box devices-mode">
-                    <strong>🚀 Devices Mode:</strong> Advanced device usage analysis with 2-day comparison. Excludes CashCenter records for precise device-only insights. Formula: (Day1 + Day2) ÷ 2
-                </div>
-                <div class="info-box cashcentres-mode">
-                    <strong>💎 Cash Centres Mode:</strong> Import Date must be Saturday. Usage pulls from 3 consecutive days (Sat→Sun→Mon). Calculated dates are Import+2 and Import+3. Formula: ((Day1 + Day2) ÷ 2) + ((Day2 + Day3) ÷ 2)
-                </div>
-            </div>
-
-            <div class="config-section">
-                <h2>Configuration Panel</h2>
-                
-                <!-- Devices Configuration -->
-                <div class="devices-mode">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="importDate">📅 Import Date:</label>
-                            <input type="date" id="importDate" value="2025-07-27">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="usageDate1">📊 Usage Day 1:</label>
-                            <input type="date" id="usageDate1" value="2025-07-27">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="usageDate2">📊 Usage Day 2:</label>
-                            <input type="date" id="usageDate2" value="2025-07-28">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cash Centres Configuration -->
-                <div class="cashcentres-mode">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="ccImportDate">📅 Import Date (Must be Saturday):</label>
-                            <input type="date" id="ccImportDate" value="2025-07-26" onchange="updateCashCentreDates()">
-                            <small>🗓️ Only Saturdays are allowed for CashCentre analysis</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="ccDay1">📊 Day 1 (Saturday):</label>
-                            <input type="date" id="ccDay1" value="2025-07-26" disabled class="glow">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="ccDay2">📊 Day 2 (Import + 1):</label>
-                            <input type="date" id="ccDay2" value="2025-07-27" disabled class="glow">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="ccDay3">📊 Day 3 (Import + 2):</label>
-                            <input type="date" id="ccDay3" value="2025-07-28" disabled class="glow">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Common Configuration -->
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="schema">🗄️ Database Schema:</label>
-                        <select id="schema">
-                            <option value="uat_c106">uat_c106 (UAT Environment)</option>
-                            <option value="b2c_c106">b2c_c106 (B2C Environment)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group cashcentres-mode">
-                        <label>📋 Output Options:</label>
-                        <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(102, 126, 234, 0.05); border-radius: 8px;">
-                            <input type="checkbox" id="duplicateRows" checked onchange="generateSQL()" style="position: static; opacity: 1;">
-                            <label for="duplicateRows" style="margin: 0; cursor: pointer; font-weight: normal;">✅ Generate duplicate rows with different dates</label>
-                        </div>
-                        <small>Creates two identical rows per part with Date = Import+2 and Import+3</small>
-                    </div>
-                </div>
-
-                <div class="actions">
-                    <button class="btn btn-primary" onclick="generateSQL()">
-                        <span id="generateText">🔧 Generate SQL</span>
-                    </button>
-                    <button class="btn btn-secondary" onclick="copyToClipboard()">
-                        📋 Copy to Clipboard
-                    </button>
-                    <button class="btn btn-tertiary" onclick="downloadSQL()">
-                        💾 Download SQL File
-                    </button>
-                </div>
-            </div>
-
-            <!-- Preview Section -->
-            <div class="preview-section">
-                <h3>📅 Live Configuration Preview</h3>
-                <div class="date-info">
-                    <!-- Devices Preview -->
-                    <div class="devices-mode">
-                        <div class="date-info-grid">
-                            <div class="date-info-item">
-                                <strong>Import Date</strong>
-                                <span id="previewImport">2025-07-27</span>
-                            </div>
-                            <div class="date-info-item">
-                                <strong>Usage Day 1</strong>
-                                <span id="previewDate1">2025-07-27</span>
-                            </div>
-                            <div class="date-info-item">
-                                <strong>Usage Day 2</strong>
-                                <span id="previewDate2">2025-07-28</span>
-                            </div>
-                            <div class="date-info-item">
-                                <strong>Selected Schema</strong>
-                                <span id="previewSchema">uat_c106</span>
-                            </div>
-                        </div>
-                        <div class="info-box" style="margin-top: 20px; background: linear-gradient(135deg, rgba(232, 245, 232, 0.9), rgba(195, 230, 195, 0.9)); border-color: #c3e6c3; color: #2d5a2d;">
-                            <strong>🎯 Analysis Target:</strong> Device records only (excludes CashCenter) &nbsp;|&nbsp; <strong>📈 Calculation:</strong> Average of 2-day usage pattern
-                        </div>
-                    </div>
-
-                    <!-- Cash Centres Preview -->
-                    <div class="cashcentres-mode">
-                        <div class="date-info-grid">
-                            <div class="date-info-item">
-                                <strong>Import Date</strong>
-                                <span id="ccPreviewImport">2025-07-26</span>
-                            </div>
-                            <div class="date-info-item">
-                                <strong>Day 1 (Saturday)</strong>
-                                <span id="ccPreviewDay1">2025-07-26</span>
-                            </div>
-                            <div class="date-info-item">
-                                <strong>Day 2 (Sunday)</strong>
-                                <span id="ccPreviewDay2">2025-07-27</span>
-                            </div>
-                            <div class="date-info-item">
-                                <strong>Day 3 (Monday)</strong>
-                                <span id="ccPreviewDay3">2025-07-28</span>
-                            </div>
-                        </div>
-                        <div class="info-box" style="margin-top: 20px; background: linear-gradient(135deg, rgba(255, 243, 205, 0.9), rgba(255, 234, 167, 0.9)); border-color: #ffeaa7; color: #856404;">
-                            <strong>🎯 Analysis Target:</strong> CashCenter records exclusively &nbsp;|&nbsp; <strong>📈 Calculation:</strong> Advanced 3-day rolling average formula
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="result-section">
-                <h3>🔧 Generated SQL Query</h3>
-                <div class="sql-output" id="sqlOutput">
-🚀 Welcome to SQL Query Generator Pro!
-
-Click "Generate SQL" to create your customized, enterprise-grade query...
-
-✨ Features:
-• Dual-mode analysis (Devices & Cash Centres)
-• Advanced date calculations
-• Optimized performance with ROW_NUMBER()
-• Clean, readable SQL formatting
-• Comprehensive configuration options
-                </div>
-            </div>
+        <div class="upload-area" id="uploadArea">
+            <p>Drag and drop your Excel file here, or click to select</p>
+            <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+            <button onclick="document.getElementById('fileInput').click()" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">Choose File</button>
         </div>
-    </div>
 
-    <div class="copy-notification" id="copyNotification">
-        ✅ SQL copied to clipboard successfully!
-    </div>
-
-    <div class="shortcuts-help">
-        <strong>⌨️ Keyboard Shortcuts:</strong><br>
-        <kbd>Ctrl</kbd>+<kbd>G</kbd> Generate SQL<br>
-        <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd> Copy<br>
-        <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> Download
+        <div id="results" class="results" style="display: none;"></div>
     </div>
 
     <script>
-        let generatedSQL = '';
-        let currentMode = 'devices';
-        let queryCount = 0;
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const results = document.getElementById('results');
+        let processedData = null;
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            createParticles();
-            updatePreview();
-            generateSQL();
-            
-            // Add sparkle effect on buttons
-            document.querySelectorAll('.btn').forEach(btn => {
-                btn.addEventListener('mouseenter', createSparkles);
-            });
-
-            // Add click listeners for toggle options
-            document.querySelectorAll('.toggle-option').forEach(toggle => {
-                toggle.addEventListener('click', function(e) {
-                    const mode = this.getAttribute('data-mode');
-                    switchMode(mode, e);
-                });
-            });
-            document.addEventListener('change', function(e) {
-                if (e.target.matches('#usageDate1, #usageDate2, #importDate, #schema, #ccImportDate')) {
-                    updatePreview();
-                    generateSQL();
-                }
-            });
-
-            // Keyboard shortcuts
-            document.addEventListener('keydown', function(e) {
-                if (e.ctrlKey && e.key === 'g') {
-                    e.preventDefault();
-                    generateSQL();
-                } else if (e.ctrlKey && e.shiftKey && e.key === 'C') {
-                    e.preventDefault();
-                    copyToClipboard();
-                } else if (e.ctrlKey && e.shiftKey && e.key === 'S') {
-                    e.preventDefault();
-                    downloadSQL();
-                }
-            });
+        // Handle drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
         });
 
-        // Create floating particles
-        function createParticles() {
-            const particlesContainer = document.getElementById('particles');
-            for (let i = 0; i < 20; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.width = particle.style.height = Math.random() * 10 + 5 + 'px';
-                particle.style.animationDelay = Math.random() * 20 + 's';
-                particle.style.animationDuration = Math.random() * 20 + 20 + 's';
-                particlesContainer.appendChild(particle);
-            }
-        }
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
 
-        function createSparkles(e) {
-            const button = e.target;
-            for (let i = 0; i < 3; i++) {
-                setTimeout(() => {
-                    const sparkle = document.createElement('span');
-                    sparkle.innerHTML = '✨';
-                    sparkle.style.position = 'absolute';
-                    sparkle.style.left = Math.random() * button.offsetWidth + 'px';
-                    sparkle.style.top = Math.random() * button.offsetHeight + 'px';
-                    sparkle.style.pointerEvents = 'none';
-                    sparkle.style.fontSize = '12px';
-                    sparkle.style.zIndex = '1000';
-                    sparkle.style.animation = 'fadeOut 1s ease-out forwards';
-                    button.style.position = 'relative';
-                    button.appendChild(sparkle);
-                    
-                    setTimeout(() => {
-                        if (sparkle.parentNode) {
-                            sparkle.parentNode.removeChild(sparkle);
-                        }
-                    }, 1000);
-                }, i * 100);
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                processFile(file);
             }
-        }
+        });
 
-        function switchMode(mode, event) {
-            currentMode = mode;
-            const dashboard = document.getElementById('dashboard');
-            const toggles = document.querySelectorAll('.toggle-option');
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        });
+
+        function formatDate(dateValue) {
+            if (!dateValue) return dateValue;
             
-            // Update visual state
-            toggles.forEach(toggle => toggle.classList.remove('active', 'pulse'));
+            let date;
             
-            // Activate the clicked toggle
-            if (event && event.currentTarget) {
-                event.currentTarget.classList.add('active', 'pulse');
+            if (dateValue instanceof Date) {
+                date = dateValue;
+            } else if (typeof dateValue === 'string') {
+                date = new Date(dateValue);
+            } else if (typeof dateValue === 'number') {
+                // Excel serial date number
+                date = new Date((dateValue - 25569) * 86400 * 1000);
             } else {
-                // Fallback method
-                const activeToggle = document.querySelector(`.toggle-option input[value="${mode}"]`).parentElement;
-                activeToggle.classList.add('active', 'pulse');
+                return dateValue;
             }
-            
-            // Update radio button
-            document.querySelector(`input[value="${mode}"]`).checked = true;
-            
-            // Switch content with animation
-            if (mode === 'cashcentres') {
-                dashboard.classList.add('cashcentres-active');
-                updateCashCentreDates();
-            } else {
-                dashboard.classList.remove('cashcentres-active');
+
+            if (isNaN(date.getTime())) {
+                return dateValue;
             }
+
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
             
-            updatePreview();
-            generateSQL();
-            
-            // Show mode switch feedback
-            showModeSwitch(mode);
+            return `${year}-${month}-${day}`;
         }
 
-        function showModeSwitch(mode) {
-            const notification = document.getElementById('copyNotification');
-            notification.innerHTML = `🔄 Switched to ${mode === 'devices' ? 'Devices' : 'Cash Centres'} mode!`;
-            notification.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    notification.innerHTML = '✅ SQL copied to clipboard successfully!';
-                    notification.style.background = 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)';
-                }, 400);
-            }, 2000);
-        }
-
-        function updateCashCentreDates() {
-            const importDate = document.getElementById('ccImportDate').value;
-            if (!importDate) return;
-            
-            const date = new Date(importDate);
-            
-            // Check if it's a Saturday (0 = Sunday, 6 = Saturday)
-            if (date.getDay() !== 6) {
-                showCustomNotification('⚠️ Please select a Saturday for CashCentre import date!', '#fa709a');
-                // Find the nearest Saturday
-                const nearestSaturday = new Date(date);
-                const daysToAdd = (6 - date.getDay() + 7) % 7 || 7;
-                nearestSaturday.setDate(nearestSaturday.getDate() + daysToAdd - 7);
-                document.getElementById('ccImportDate').value = nearestSaturday.toISOString().split('T')[0];
-                updateCashCentreDates();
-                return;
+        function escapeCsvValue(value) {
+            if (value === null || value === undefined) return '';
+            const str = String(value);
+            // Escape quotes and wrap in quotes if contains comma, quote, or newline
+            if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+                return '"' + str.replace(/"/g, '""') + '"';
             }
+            return str;
+        }
+
+        function downloadCsv(csvContent, filename) {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function processFile(file) {
+            const reader = new FileReader();
             
-            // Usage Days: Consecutive from import date
-            // Day 1 = Import Date (Saturday)
-            document.getElementById('ccDay1').value = importDate;
-            
-            // Day 2 = Import Date + 1 (Sunday)
-            const day2 = new Date(date);
-            day2.setDate(day2.getDate() + 1);
-            document.getElementById('ccDay2').value = day2.toISOString().split('T')[0];
-            
-            // Day 3 = Import Date + 2 (Monday)
-            const day3 = new Date(date);
-            day3.setDate(day3.getDate() + 2);
-            document.getElementById('ccDay3').value = day3.toISOString().split('T')[0];
-            
-            updatePreview();
-            generateSQL();
-        }
-
-        function showCustomNotification(message, color) {
-            const notification = document.getElementById('copyNotification');
-            notification.innerHTML = message;
-            notification.style.background = color;
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    notification.innerHTML = '✅ SQL copied to clipboard successfully!';
-                    notification.style.background = 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)';
-                }, 400);
-            }, 3000);
-        }
-
-        function updatePreview() {
-            if (currentMode === 'devices') {
-                document.getElementById('previewDate1').textContent = document.getElementById('usageDate1').value;
-                document.getElementById('previewDate2').textContent = document.getElementById('usageDate2').value;
-                document.getElementById('previewImport').textContent = document.getElementById('importDate').value;
-                document.getElementById('previewSchema').textContent = document.getElementById('schema').value;
-            } else {
-                document.getElementById('ccPreviewImport').textContent = document.getElementById('ccImportDate').value;
-                document.getElementById('ccPreviewDay1').textContent = document.getElementById('ccDay1').value;
-                document.getElementById('ccPreviewDay2').textContent = document.getElementById('ccDay2').value;
-                document.getElementById('ccPreviewDay3').textContent = document.getElementById('ccDay3').value;
-            }
-        }
-
-        function formatDateForSQL(dateString) {
-            return dateString + ' 00:00:00';
-        }
-
-        function getDateLabel(dateString) {
-            const date = new Date(dateString);
-            const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
-                          'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
-            return months[date.getMonth()] + date.getDate();
-        }
-
-        function calculateSerialDate(dateString) {
-            const date = new Date(dateString);
-            const baseDate = new Date('1900-01-01');
-            const timeDiff = date.getTime() - baseDate.getTime();
-            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-            return daysDiff + 2;
-        }
-
-        function getFormattedDate(baseDate, daysToAdd) {
-            const date = new Date(baseDate);
-            date.setDate(date.getDate() + daysToAdd);
-            return date.toISOString().split('T')[0].split('-').reverse().join('-');
-        }
-
-        function addBusinessDays(startDate, businessDaysToAdd) {
-            const date = new Date(startDate);
-            let daysAdded = 0;
-            
-            while (daysAdded < businessDaysToAdd) {
-                date.setDate(date.getDate() + 1);
-                // Skip weekends (0 = Sunday, 6 = Saturday)
-                if (date.getDay() !== 0 && date.getDay() !== 6) {
-                    daysAdded++;
-                }
-            }
-            
-            return date.toISOString().split('T')[0];
-        }
-
-        function getThursdayFromSaturday(saturdayDate) {
-            const date = new Date(saturdayDate);
-            // Go back 2 days from Saturday to get Thursday
-            date.setDate(date.getDate() - 2);
-            return date.toISOString().split('T')[0];
-        }
-
-        function getFridayFromSaturday(saturdayDate) {
-            const date = new Date(saturdayDate);
-            // Go back 1 day from Saturday to get Friday
-            date.setDate(date.getDate() - 1);
-            return date.toISOString().split('T')[0];
-        }
-
-        function generateSQL() {
-            // Show loading state
-            const generateBtn = document.getElementById('generateText');
-            const originalText = generateBtn.innerHTML;
-            generateBtn.innerHTML = '<span class="loading"></span> Generating...';
-            
-            setTimeout(() => {
+            reader.onload = function(e) {
                 try {
-                    const schema = document.getElementById('schema').value;
-
-                    if (currentMode === 'devices') {
-                        generateDevicesSQL(schema);
-                    } else {
-                        generateCashCentresSQL(schema);
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { 
+                        type: 'array',
+                        cellDates: true
+                    });
+                    
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    if (jsonData.length === 0) {
+                        results.innerHTML = '<p>No data found in the Excel file.</p>';
+                        results.style.display = 'block';
+                        return;
                     }
                     
-                    // Update counter with animation
-                    queryCount++;
-                    const countElement = document.getElementById('queryCount');
-                    countElement.textContent = queryCount;
-                    countElement.classList.add('animate');
-                    setTimeout(() => countElement.classList.remove('animate'), 300);
+                    const headers = jsonData[0];
+                    const dataRows = jsonData.slice(1);
                     
-                    // Add glow effect
-                    document.querySelector('.sql-output').classList.add('glow');
-                    setTimeout(() => {
-                        document.querySelector('.sql-output').classList.remove('glow');
-                    }, 2000);
+                    // Find column J (index 9)
+                    const columnJHeader = headers[9];
                     
-                    // Show success
-                    generateBtn.innerHTML = '<span class="success-check"></span> Generated!';
-                    setTimeout(() => {
-                        generateBtn.innerHTML = originalText;
-                    }, 2000);
+                    let csvOutput = '';
+                    let formattedDatesCount = 0;
+                    
+                    // Add headers
+                    csvOutput += headers.map(header => escapeCsvValue(header)).join(',') + '\n';
+                    
+                    // Process each data row
+                    for (let i = 0; i < dataRows.length; i++) {
+                        const row = [...dataRows[i]]; // Copy the row
+                        
+                        // Format column J (index 9)
+                        if (row[9]) {
+                            const originalValue = row[9];
+                            const formattedValue = formatDate(row[9]);
+                            if (formattedValue !== originalValue) {
+                                formattedDatesCount++;
+                            }
+                            row[9] = formattedValue;
+                        }
+                        
+                        // Convert row to CSV format
+                        const csvRow = row.map(cell => escapeCsvValue(cell)).join(',');
+                        csvOutput += csvRow + '\n';
+                    }
+                    
+                    processedData = csvOutput;
+                    
+                    // Show results
+                    const originalFileName = file.name.replace(/\.[^/.]+$/, "");
+                    const csvFileName = `${originalFileName}_formatted.csv`;
+                    
+                    let resultsHTML = `
+                        <div class="success">
+                            <strong>✓ Processing Complete!</strong><br>
+                            File: ${file.name}<br>
+                            Total rows: ${dataRows.length}<br>
+                            Column J (${columnJHeader}): ${formattedDatesCount} dates formatted to YYYY-MM-DD<br>
+                        </div>
+                        
+                        <div>
+                            <button class="download-btn" onclick="downloadCsv(processedData, '${csvFileName}')">
+                                Download CSV File
+                            </button>
+                        </div>
+                        
+                        <div class="stats">
+                            <strong>Preview (first 10 lines):</strong>
+                        </div>
+                        <div class="preview">${csvOutput.split('\n').slice(0, 10).join('\n')}</div>
+                    `;
+                    
+                    results.innerHTML = resultsHTML;
+                    results.style.display = 'block';
+                    
                 } catch (error) {
-                    console.error('Error generating SQL:', error);
-                    generateBtn.innerHTML = '❌ Error!';
-                    document.querySelector('.config-section').classList.add('error-shake');
-                    setTimeout(() => {
-                        generateBtn.innerHTML = originalText;
-                        document.querySelector('.config-section').classList.remove('error-shake');
-                    }, 1000);
+                    results.innerHTML = `<p style="color: red;">Error processing file: ${error.message}</p>`;
+                    results.style.display = 'block';
+                    console.error('Processing error:', error);
                 }
-            }, 800);
+            };
+            
+            reader.readAsArrayBuffer(file);
         }
-
-        function generateDevicesSQL(schema) {
-            const usageDate1 = document.getElementById('usageDate1').value;
-            const usageDate2 = document.getElementById('usageDate2').value;
-            const importDate = document.getElementById('importDate').value;
-
-            const date1Label = getDateLabel(usageDate1);
-            const date2Label = getDateLabel(usageDate2);
-            const serialDate = calculateSerialDate(importDate);
-
-            generatedSQL = `-- ====================================================================
--- 📦 DEVICES ANALYSIS QUERY - SQL Generator Pro ⚡
--- ====================================================================
--- Generated: ${new Date().toLocaleString()}
--- Mode: Devices Analysis
--- Schema: ${schema}
--- ====================================================================
-
-WITH ${date1Label}_usage AS (
-    SELECT
-        vsp.wwarehousepartid,
-        vsp.usage as usage_${date1Label},
-        vsp.dlt,
-        ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-    FROM ${schema}.vvsimulationprojection vsp
-    JOIN ${schema}.vvwarehouseparts wp
-        ON vsp.wwarehousepartid = wp.wwarehousepartid
-    WHERE vsp.importdatetime = '${formatDateForSQL(usageDate1)}'
-        AND wp.partcode != 'BIN'
-        AND wp.PartGroup1Code != 'CashCenter'  -- 🚫 Exclude CashCenter records
-),
-${date2Label}_usage AS (
-    SELECT
-        vsp.wwarehousepartid,
-        vsp.usage as usage_${date2Label},
-        wp.warehousecode,
-        wp.partcode,
-        wp.PartGroup1Code,
-        ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-    FROM ${schema}.vvsimulationprojection vsp
-    JOIN ${schema}.vvwarehouseparts wp
-        ON vsp.wwarehousepartid = wp.wwarehousepartid
-    WHERE vsp.importdatetime = '${formatDateForSQL(usageDate2)}'
-        AND wp.partcode != 'BIN'
-        AND wp.PartGroup1Code != 'CashCenter'  -- 🚫 Exclude CashCenter records
-)
-SELECT
-    b.warehousecode,
-    b.partcode,
-    b.PartGroup1Code,
-    b.wwarehousepartid,
-    COALESCE(a.usage_${date1Label}, 0) as usage_${usageDate1.replace(/-/g, '_')},
-    COALESCE(b.usage_${date2Label}, 0) as usage_${usageDate2.replace(/-/g, '_')},
-    -- 📊 Quantity Calculation: (Day1 + Day2) / 2
-    ROUND((COALESCE(a.usage_${date1Label}, 0) + COALESCE(b.usage_${date2Label}, 0)) / 2.0) as quantity,
-    'Anticipation' as AnticipationZoneName,
-    COALESCE(a.dlt, 0) as dlt,
-    ${serialDate} + COALESCE(a.dlt, 0) as Date,
-    CASE 
-        WHEN a.dlt = 1 THEN '${getFormattedDate(importDate, 1)}'
-        WHEN a.dlt = 2 THEN '${getFormattedDate(importDate, 2)}'
-        ELSE NULL
-    END as date2
-FROM ${date2Label}_usage b
-LEFT JOIN ${date1Label}_usage a
-    ON b.wwarehousepartid = a.wwarehousepartid
-    AND a.rn = 1
-WHERE b.rn = 1
-ORDER BY b.warehousecode, b.partcode;
-
--- ====================================================================
--- 📋 CONFIGURATION SUMMARY
--- ====================================================================
--- Base Import Date: ${importDate} (used for date calculations)
--- Usage Day 1: ${usageDate1} (pulls from import date: ${usageDate1})
--- Usage Day 2: ${usageDate2} (pulls from import date: ${usageDate2})
--- Schema: ${schema}
--- Filter: Excludes CashCenter records for device-only analysis
--- Quantity Logic: (Day1 + Day2) / 2 - Simple average
--- Note: Each usage day pulls from its corresponding import date
--- ====================================================================`;
-
-            document.getElementById('sqlOutput').textContent = generatedSQL;
-        }
-
-        function generateCashCentresSQL(schema) {
-            const importDate = document.getElementById('ccImportDate').value;
-            const day1 = document.getElementById('ccDay1').value;
-            const day2 = document.getElementById('ccDay2').value;
-            const day3 = document.getElementById('ccDay3').value;
-            const duplicateRows = document.getElementById('duplicateRows').checked;
-
-            const day1Label = getDateLabel(day1);
-            const day2Label = getDateLabel(day2);
-            const day3Label = getDateLabel(day3);
-            const thursdayDate = getThursdayFromSaturday(importDate);
-            const fridayDate = getFridayFromSaturday(importDate);
-
-            if (duplicateRows) {
-                // Generate query with duplicate rows
-                generatedSQL = `-- ====================================================================
--- 💰 CASH CENTRES ANALYSIS QUERY - SQL Generator Pro ⚡ (DUPLICATE ROWS)
--- ====================================================================
--- Generated: ${new Date().toLocaleString()}
--- Mode: Cash Centres Analysis with Duplicate Rows
--- Schema: ${schema}
--- ====================================================================
-
-WITH ${day1Label}_data AS (
-    SELECT
-        vsp.wwarehousepartid,
-        vsp.usage as usage_${day1Label},
-        vsp.dlt,
-        ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-    FROM ${schema}.vvsimulationprojection vsp
-    JOIN ${schema}.vvwarehouseparts wp
-        ON vsp.wwarehousepartid = wp.wwarehousepartid
-    WHERE vsp.importdatetime = '${formatDateForSQL(day1)}'
-        AND wp.partcode != 'BIN'
-        AND wp.PartGroup1Code = 'CashCenter'  -- 💰 CashCenter records only
-),
-${day2Label}_data AS (
-    SELECT
-        vsp.wwarehousepartid,
-        vsp.usage as usage_${day2Label},
-        ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-    FROM ${schema}.vvsimulationprojection vsp
-    JOIN ${schema}.vvwarehouseparts wp
-        ON vsp.wwarehousepartid = wp.wwarehousepartid
-    WHERE vsp.importdatetime = '${formatDateForSQL(day2)}'
-        AND wp.partcode != 'BIN'
-        AND wp.PartGroup1Code = 'CashCenter'  -- 💰 CashCenter records only
-),
-${day3Label}_data AS (
-    SELECT
-        vsp.wwarehousepartid,
-        vsp.usage as usage_${day3Label},
-        wp.warehousecode,
-        wp.partcode,
-        wp.PartGroup1Code,
-        ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-    FROM ${schema}.vvsimulationprojection vsp
-    JOIN ${schema}.vvwarehouseparts wp
-        ON vsp.wwarehousepartid = wp.wwarehousepartid
-    WHERE vsp.importdatetime = '${formatDateForSQL(day3)}'
-        AND wp.partcode != 'BIN'
-        AND wp.PartGroup1Code = 'CashCenter'  -- 💰 CashCenter records only
-),
-base_query AS (
-    SELECT
-        c.warehousecode,
-        c.partcode,
-        c.PartGroup1Code,
-        c.wwarehousepartid,
-        COALESCE(a.usage_${day1Label}, 0) as usage_${day1.replace(/-/g, '_')},
-        COALESCE(b.usage_${day2Label}, 0) as usage_${day2.replace(/-/g, '_')},
-        COALESCE(c.usage_${day3Label}, 0) as usage_${day3.replace(/-/g, '_')},
-        -- 📊 Advanced Quantity Calculation: ((Day1 + Day2) / 2) + ((Day2 + Day3) / 2)
-        ROUND(((COALESCE(a.usage_${day1Label}, 0) + COALESCE(b.usage_${day2Label}, 0)) / 2.0) + 
-              ((COALESCE(b.usage_${day2Label}, 0) + COALESCE(c.usage_${day3Label}, 0)) / 2.0)) as quantity,
-        'Anticipation' as AnticipationZoneName,
-        COALESCE(a.dlt, 0) as dlt
-    FROM ${day3Label}_data c
-    LEFT JOIN ${day1Label}_data a
-        ON c.wwarehousepartid = a.wwarehousepartid
-        AND a.rn = 1
-    LEFT JOIN ${day2Label}_data b
-        ON c.wwarehousepartid = b.wwarehousepartid
-        AND b.rn = 1
-    WHERE c.rn = 1
-),
-thursday_rows AS (
-    SELECT
-        warehousecode,
-        partcode,
-        PartGroup1Code,
-        wwarehousepartid,
-        usage_${day1.replace(/-/g, '_')},
-        usage_${day2.replace(/-/g, '_')},
-        usage_${day3.replace(/-/g, '_')},
-        quantity,
-        AnticipationZoneName,
-        dlt,
-        -- 📅 Thursday + DLT business days
-        CASE 
-            WHEN dlt = 0 THEN '${thursdayDate}'
-            WHEN dlt = 1 THEN '${addBusinessDays(thursdayDate, 1)}'
-            WHEN dlt = 2 THEN '${addBusinessDays(thursdayDate, 2)}'
-            WHEN dlt = 3 THEN '${addBusinessDays(thursdayDate, 3)}'
-            ELSE '${addBusinessDays(thursdayDate, 1)}'
-        END as Date
-    FROM base_query
-),
-friday_rows AS (
-    SELECT
-        warehousecode,
-        partcode,
-        PartGroup1Code,
-        wwarehousepartid,
-        usage_${day1.replace(/-/g, '_')},
-        usage_${day2.replace(/-/g, '_')},
-        usage_${day3.replace(/-/g, '_')},
-        quantity,
-        AnticipationZoneName,
-        dlt,
-        -- 📅 Friday + DLT business days
-        CASE 
-            WHEN dlt = 0 THEN '${fridayDate}'
-            WHEN dlt = 1 THEN '${addBusinessDays(fridayDate, 1)}'
-            WHEN dlt = 2 THEN '${addBusinessDays(fridayDate, 2)}'
-            WHEN dlt = 3 THEN '${addBusinessDays(fridayDate, 3)}'
-            ELSE '${addBusinessDays(fridayDate, 1)}'
-        END as Date
-    FROM base_query
-)
-SELECT * FROM thursday_rows
-UNION ALL
-SELECT * FROM friday_rows
-ORDER BY warehousecode, partcode, Date;
-
--- ====================================================================
--- 📋 CONFIGURATION SUMMARY
--- ====================================================================
--- Import Date: ${importDate} (Saturday)
--- Day 1: ${day1} (Saturday - Import Date) 
--- Day 2: ${day2} (Sunday - Import Date + 1)
--- Day 3: ${day3} (Monday - Import Date + 2)
--- Thursday: ${thursdayDate} (Import Date - 2)
--- Friday: ${fridayDate} (Import Date - 1)
--- Schema: ${schema}
--- Filter: CashCenter records exclusively
--- Usage Logic: Consecutive days Sat→Sun→Mon
--- Quantity Logic: ((Day1 + Day2) / 2) + ((Day2 + Day3) / 2) - Rolling average
--- Duplicate Rows: Enabled - Each record appears twice
--- Date Calculation: Thursday + DLT and Friday + DLT (business days)
--- Business Day Logic: Saturday/Sunday are skipped in DLT calculation
--- ====================================================================`;
-            } else {
-                // Generate normal query without duplicates
-                generatedSQL = `-- ====================================================================
--- 💰 CASH CENTRES ANALYSIS QUERY - SQL Generator Pro ⚡
--- ====================================================================
--- Generated: ${new Date().toLocaleString()}
--- Mode: Cash Centres Analysis
--- Schema: ${schema}
--- ====================================================================
-
-WITH ${day1Label}_usage AS (
-    SELECT
-        vsp.wwarehousepartid,
-        vsp.usage as usage_${day1Label},
-        vsp.dlt,
-        ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-    FROM ${schema}.vvsimulationprojection vsp
-    JOIN ${schema}.vvwarehouseparts wp
-        ON vsp.wwarehousepartid = wp.wwarehousepartid
-    WHERE vsp.importdatetime = '${formatDateForSQL(day1)}'
-        AND wp.partcode != 'BIN'
-        AND wp.PartGroup1Code = 'CashCenter'  -- 💰 CashCenter records only
-),
-${day2Label}_usage AS (
-    SELECT
-        vsp.wwarehousepartid,
-        vsp.usage as usage_${day2Label},
-        ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-    FROM ${schema}.vvsimulationprojection vsp
-    JOIN ${schema}.vvwarehouseparts wp
-        ON vsp.wwarehousepartid = wp.wwarehousepartid
-    WHERE vsp.importdatetime = '${formatDateForSQL(day2)}'
-        AND wp.partcode != 'BIN'
-        AND wp.PartGroup1Code = 'CashCenter'  -- 💰 CashCenter records only
-),
-${day3Label}_usage AS (
-    SELECT
-        vsp.wwarehousepartid,
-        vsp.usage as usage_${day3Label},
-        wp.warehousecode,
-        wp.partcode,
-        wp.PartGroup1Code,
-        ROW_NUMBER() OVER (PARTITION BY vsp.wwarehousepartid ORDER BY vsp.lastmodifiedutc DESC) as rn
-    FROM ${schema}.vvsimulationprojection vsp
-    JOIN ${schema}.vvwarehouseparts wp
-        ON vsp.wwarehousepartid = wp.wwarehousepartid
-    WHERE vsp.importdatetime = '${formatDateForSQL(day3)}'
-        AND wp.partcode != 'BIN'
-        AND wp.PartGroup1Code = 'CashCenter'  -- 💰 CashCenter records only
-)
-SELECT
-    c.warehousecode,
-    c.partcode,
-    c.PartGroup1Code,
-    c.wwarehousepartid,
-    COALESCE(a.usage_${day1Label}, 0) as usage_${day1.replace(/-/g, '_')},
-    COALESCE(b.usage_${day2Label}, 0) as usage_${day2.replace(/-/g, '_')},
-    COALESCE(c.usage_${day3Label}, 0) as usage_${day3.replace(/-/g, '_')},
-    -- 📊 Advanced Quantity Calculation: ((Day1 + Day2) / 2) + ((Day2 + Day3) / 2)
-    ROUND(((COALESCE(a.usage_${day1Label}, 0) + COALESCE(b.usage_${day2Label}, 0)) / 2.0) + 
-          ((COALESCE(b.usage_${day2Label}, 0) + COALESCE(c.usage_${day3Label}, 0)) / 2.0)) as quantity,
-    'Anticipation' as AnticipationZoneName,
-    COALESCE(a.dlt, 0) as dlt,
-    -- 📅 Business Day Calculations: Thursday + DLT business days
-    CASE 
-        WHEN COALESCE(a.dlt, 0) = 0 THEN '${thursdayDate}'
-        WHEN COALESCE(a.dlt, 0) = 1 THEN '${addBusinessDays(thursdayDate, 1)}'
-        WHEN COALESCE(a.dlt, 0) = 2 THEN '${addBusinessDays(thursdayDate, 2)}'
-        WHEN COALESCE(a.dlt, 0) = 3 THEN '${addBusinessDays(thursdayDate, 3)}'
-        ELSE '${addBusinessDays(thursdayDate, 1)}'
-    END as Date,
-    -- 📅 Business Day Calculations: Friday + DLT business days
-    CASE 
-        WHEN COALESCE(a.dlt, 0) = 0 THEN '${fridayDate}'
-        WHEN COALESCE(a.dlt, 0) = 1 THEN '${addBusinessDays(fridayDate, 1)}'
-        WHEN COALESCE(a.dlt, 0) = 2 THEN '${addBusinessDays(fridayDate, 2)}'
-        WHEN COALESCE(a.dlt, 0) = 3 THEN '${addBusinessDays(fridayDate, 3)}'
-        ELSE '${addBusinessDays(fridayDate, 1)}'
-    END as date2
-FROM ${day3Label}_usage c
-LEFT JOIN ${day1Label}_usage a
-    ON c.wwarehousepartid = a.wwarehousepartid
-    AND a.rn = 1
-LEFT JOIN ${day2Label}_usage b
-    ON c.wwarehousepartid = b.wwarehousepartid
-    AND b.rn = 1
-WHERE c.rn = 1
-ORDER BY c.warehousecode, c.partcode;
-
--- ====================================================================
--- 📋 CONFIGURATION SUMMARY
--- ====================================================================
--- Import Date: ${importDate} (Saturday)
--- Day 1: ${day1} (Saturday - Import Date)
--- Day 2: ${day2} (Sunday - Import Date + 1) 
--- Day 3: ${day3} (Monday - Import Date + 2)
--- Thursday: ${thursdayDate} (Import Date - 2)
--- Friday: ${fridayDate} (Import Date - 1)
--- Schema: ${schema}
--- Filter: CashCenter records exclusively
--- Usage Logic: Consecutive days Sat→Sun→Mon
--- Quantity Logic: ((Day1 + Day2) / 2) + ((Day2 + Day3) / 2) - Rolling average
--- Date Field: Thursday + DLT business days (skip weekends)
--- Date2 Field: Friday + DLT business days (skip weekends)
--- Business Day Logic: Saturday/Sunday are skipped in DLT calculation
--- ====================================================================`;
+    </script>
+</body>
+</html>
