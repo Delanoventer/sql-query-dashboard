@@ -144,7 +144,58 @@
             if (dateValue instanceof Date) {
                 date = dateValue;
             } else if (typeof dateValue === 'string') {
-                date = new Date(dateValue);
+                const str = dateValue.trim();
+                
+                // Handle dd/mm/yyyy format
+                if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str)) {
+                    const parts = str.split('/');
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1; // JS months are 0-based
+                    const year = parseInt(parts[2], 10);
+                    date = new Date(year, month, day);
+                }
+                // Handle dd-mm-yyyy format
+                else if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(str)) {
+                    const parts = str.split('-');
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1;
+                    const year = parseInt(parts[2], 10);
+                    date = new Date(year, month, day);
+                }
+                // Handle yyyy-mm-dd format (already correct, but parse to validate)
+                else if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(str)) {
+                    date = new Date(str);
+                }
+                // Handle ISO format like "2025-07-25T22:00:00.000Z"
+                else if (str.includes('T') || str.includes('Z')) {
+                    date = new Date(str);
+                }
+                // Handle mm/dd/yyyy format (less common but possible)
+                else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str)) {
+                    // This is ambiguous with dd/mm/yyyy, but we'll try standard Date parsing
+                    // which assumes mm/dd/yyyy for US format
+                    const testDate = new Date(str);
+                    if (!isNaN(testDate.getTime())) {
+                        // Check if day > 12, then it's likely dd/mm/yyyy
+                        const parts = str.split('/');
+                        const firstNum = parseInt(parts[0], 10);
+                        const secondNum = parseInt(parts[1], 10);
+                        
+                        if (firstNum > 12 && secondNum <= 12) {
+                            // Definitely dd/mm/yyyy
+                            const day = firstNum;
+                            const month = secondNum - 1;
+                            const year = parseInt(parts[2], 10);
+                            date = new Date(year, month, day);
+                        } else {
+                            date = testDate;
+                        }
+                    }
+                }
+                // Try generic Date parsing as fallback
+                else {
+                    date = new Date(str);
+                }
             } else if (typeof dateValue === 'number') {
                 // Excel serial date number
                 date = new Date((dateValue - 25569) * 86400 * 1000);
@@ -153,7 +204,8 @@
             }
 
             if (isNaN(date.getTime())) {
-                return dateValue;
+                console.warn('Could not parse date:', dateValue);
+                return dateValue; // Return original if we can't parse it
             }
 
             const year = date.getFullYear();
@@ -219,6 +271,7 @@
                     csvOutput += headers.map(header => escapeCsvValue(header)).join(',') + '\n';
                     
                     // Process each data row
+                    let unformattedDates = [];
                     for (let i = 0; i < dataRows.length; i++) {
                         const row = [...dataRows[i]]; // Copy the row
                         
@@ -228,6 +281,9 @@
                             const formattedValue = formatDate(row[9]);
                             if (formattedValue !== originalValue) {
                                 formattedDatesCount++;
+                            } else if (originalValue && !originalValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                                // Track values that couldn't be formatted and aren't already in correct format
+                                unformattedDates.push({ row: i + 2, value: originalValue }); // +2 because of header and 0-based index
                             }
                             row[9] = formattedValue;
                         }
@@ -249,7 +305,16 @@
                             File: ${file.name}<br>
                             Total rows: ${dataRows.length}<br>
                             Column J (${columnJHeader}): ${formattedDatesCount} dates formatted to YYYY-MM-DD<br>
+                            ${unformattedDates.length > 0 ? `⚠️ ${unformattedDates.length} values could not be formatted` : '✓ All dates successfully formatted'}
                         </div>
+                        
+                        ${unformattedDates.length > 0 ? `
+                        <div class="info">
+                            <strong>Unformatted values (first 10):</strong><br>
+                            ${unformattedDates.slice(0, 10).map(item => `Row ${item.row}: "${item.value}"`).join('<br>')}
+                            ${unformattedDates.length > 10 ? `<br>... and ${unformattedDates.length - 10} more` : ''}
+                        </div>
+                        ` : ''}
                         
                         <div>
                             <button class="download-btn" onclick="downloadCsv(processedData, '${csvFileName}')">
