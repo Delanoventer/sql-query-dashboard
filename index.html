@@ -3,525 +3,402 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Delimiter Converter</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <title>Pivot to Flat File Converter</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
+            background-color: #f5f5f5;
         }
-
         .container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-            width: 100%;
-            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-
         h1 {
             color: #333;
-            margin-bottom: 10px;
-            font-size: 2.5em;
-            font-weight: 300;
-        }
-
-        .subtitle {
-            color: #666;
-            margin-bottom: 40px;
-            font-size: 1.1em;
-        }
-
-        .upload-area {
-            border: 3px dashed #667eea;
-            border-radius: 15px;
-            padding: 60px 20px;
+            text-align: center;
             margin-bottom: 30px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            background: rgba(102, 126, 234, 0.05);
         }
-
-        .upload-area:hover, .upload-area.dragover {
-            border-color: #764ba2;
-            background: rgba(118, 75, 162, 0.1);
-            transform: translateY(-5px);
-        }
-
-        .upload-icon {
-            font-size: 4em;
-            color: #667eea;
+        .upload-area {
+            border: 2px dashed #007bff;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
             margin-bottom: 20px;
-        }
-
-        .upload-text {
-            font-size: 1.2em;
-            color: #555;
-            margin-bottom: 10px;
-        }
-
-        .upload-subtext {
-            color: #888;
-            font-size: 0.9em;
-        }
-
-        #fileInput {
-            display: none;
-        }
-
-        .file-info {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            text-align: left;
-            display: none;
-        }
-
-        .file-info h3 {
-            color: #333;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .file-info p {
-            margin: 5px 0;
-            color: #666;
-        }
-
-        .convert-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 25px;
-            font-size: 1.1em;
+            background-color: #f8f9fa;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin: 20px 10px;
+        }
+        .upload-area:hover {
+            border-color: #0056b3;
+            background-color: #e3f2fd;
+        }
+        .upload-area.dragover {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+        input[type="file"] {
             display: none;
         }
-
-        .convert-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background-color 0.3s;
         }
-
-        .convert-btn:disabled {
-            opacity: 0.6;
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn:disabled {
+            background-color: #6c757d;
             cursor: not-allowed;
-            transform: none;
         }
-
-        .download-btn {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 25px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 20px 10px;
-            display: none;
-        }
-
-        .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
-        }
-
-        .status {
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            display: none;
-        }
-
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .loading {
-            display: none;
-            margin: 20px 0;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         .preview {
-            margin: 20px 0;
-            text-align: left;
-            display: none;
-        }
-
-        .preview h4 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .preview-table {
-            overflow-x: auto;
-            max-height: 200px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
             border: 1px solid #ddd;
             border-radius: 5px;
         }
-
-        .preview-table table {
+        .preview table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.9em;
+            font-size: 12px;
         }
-
-        .preview-table th,
-        .preview-table td {
-            padding: 8px;
+        .preview th, .preview td {
             border: 1px solid #ddd;
+            padding: 8px;
             text-align: left;
         }
-
-        .preview-table th {
-            background: #f8f9fa;
-            font-weight: 600;
+        .preview th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .status {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .options {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .options label {
+            display: block;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .options input, .options select {
+            margin-left: 10px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔄 Delimiter Converter</h1>
-        <p class="subtitle">Convert CSV and Excel files to pipe-delimited format</p>
+        <h1>📊 Pivot Table to Flat File Converter</h1>
         
         <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-            <div class="upload-icon">📁</div>
-            <div class="upload-text">Click to select or drag & drop your file</div>
-            <div class="upload-subtext">Supports CSV, TSV, TXT, XLS, XLSX files</div>
+            <p>📁 Click here to select your Excel file or drag and drop it</p>
+            <p style="color: #666; font-size: 14px;">Supports .xlsx and .xls files</p>
         </div>
         
-        <input type="file" id="fileInput" accept=".csv,.tsv,.txt,.xls,.xlsx" />
+        <input type="file" id="fileInput" accept=".xlsx,.xls" />
         
-        <div class="file-info" id="fileInfo">
-            <h3>📊 File Information</h3>
-            <p><strong>Name:</strong> <span id="fileName"></span></p>
-            <p><strong>Size:</strong> <span id="fileSize"></span></p>
-            <p><strong>Type:</strong> <span id="fileType"></span></p>
-            <p><strong>Detected Delimiter:</strong> <span id="detectedDelimiter"></span></p>
-            <p><strong>Rows:</strong> <span id="rowCount"></span></p>
-            <p><strong>Columns:</strong> <span id="columnCount"></span></p>
+        <div class="options">
+            <h3>Output Options</h3>
+            <label>
+                Delimiter: 
+                <select id="delimiter">
+                    <option value="|">Pipe (|)</option>
+                    <option value=",">Comma (,)</option>
+                    <option value="\t">Tab</option>
+                    <option value=";">Semicolon (;)</option>
+                </select>
+            </label>
+            <label>
+                <input type="checkbox" id="includeZeros" checked> Include rows with zero quantities
+            </label>
+            <label>
+                Date Format: 
+                <select id="dateFormat">
+                    <option value="original">Keep Original</option>
+                    <option value="yyyy-mm-dd">YYYY-MM-DD</option>
+                    <option value="mm/dd/yyyy">MM/DD/YYYY</option>
+                    <option value="dd/mm/yyyy">DD/MM/YYYY</option>
+                </select>
+            </label>
         </div>
         
-        <div class="preview" id="preview">
-            <h4>Preview (first 5 rows):</h4>
-            <div class="preview-table" id="previewTable"></div>
-        </div>
+        <div id="status"></div>
         
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Processing file...</p>
-        </div>
+        <div id="preview"></div>
         
-        <div class="status" id="status"></div>
-        
-        <button class="convert-btn" id="convertBtn">Convert to Pipe Delimited</button>
-        <button class="download-btn" id="downloadBtn">Download Converted File</button>
+        <button class="btn" id="downloadBtn" onclick="downloadFile()" disabled>📥 Download Converted File</button>
     </div>
 
     <script>
-        let currentFileData = null;
-        let convertedData = null;
-        let originalFileName = '';
+        let convertedData = '';
+        let originalFilename = '';
 
-        const fileInput = document.getElementById('fileInput');
+        // File upload handling
+        document.getElementById('fileInput').addEventListener('change', handleFile);
+        
+        // Drag and drop handling
         const uploadArea = document.querySelector('.upload-area');
-        const fileInfo = document.getElementById('fileInfo');
-        const preview = document.getElementById('preview');
-        const convertBtn = document.getElementById('convertBtn');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const loading = document.getElementById('loading');
-        const status = document.getElementById('status');
-
-        // Drag and drop functionality
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
         });
-
+        
         uploadArea.addEventListener('dragleave', () => {
             uploadArea.classList.remove('dragover');
         });
-
+        
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
             const files = e.dataTransfer.files;
             if (files.length > 0) {
-                handleFile(files[0]);
+                processFile(files[0]);
             }
         });
 
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFile(e.target.files[0]);
+        function handleFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processFile(file);
             }
-        });
-
-        convertBtn.addEventListener('click', convertFile);
-        downloadBtn.addEventListener('click', downloadFile);
-
-        function showStatus(message, type) {
-            status.textContent = message;
-            status.className = `status ${type}`;
-            status.style.display = 'block';
-            setTimeout(() => {
-                status.style.display = 'none';
-            }, 5000);
         }
 
-        function showLoading(show) {
-            loading.style.display = show ? 'block' : 'none';
-        }
-
-        function formatBytes(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        function detectDelimiter(csvText) {
-            const delimiters = [',', '\t', ';', '|'];
-            let maxCount = 0;
-            let detectedDelimiter = ',';
+        function processFile(file) {
+            originalFilename = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+            showStatus('Processing file...', 'info');
             
-            delimiters.forEach(delimiter => {
-                const count = (csvText.split('\n')[0].match(new RegExp('\\' + delimiter, 'g')) || []).length;
-                if (count > maxCount) {
-                    maxCount = count;
-                    detectedDelimiter = delimiter;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    // Get the first sheet
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    
+                    // Convert to JSON format preserving the structure
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+                        header: 1, // Use array of arrays format
+                        raw: false // Get formatted strings
+                    });
+                    
+                    convertPivotToFlat(jsonData);
+                    
+                } catch (error) {
+                    showStatus('Error reading file: ' + error.message, 'error');
                 }
-            });
-            
-            return detectedDelimiter;
-        }
-
-        function getDelimiterName(delimiter) {
-            const names = {
-                ',': 'Comma (,)',
-                '\t': 'Tab (\\t)',
-                ';': 'Semicolon (;)',
-                '|': 'Pipe (|)'
             };
-            return names[delimiter] || delimiter;
+            reader.readAsArrayBuffer(file);
         }
 
-        function createPreviewTable(data) {
-            if (!data || data.length === 0) return '<p>No data to preview</p>';
-            
-            const previewData = data.slice(0, 6); // First 5 rows + header
-            let tableHTML = '<table>';
-            
-            previewData.forEach((row, index) => {
-                const tag = index === 0 ? 'th' : 'td';
-                tableHTML += '<tr>';
-                row.forEach(cell => {
-                    tableHTML += `<${tag}>${String(cell || '').substring(0, 50)}${String(cell || '').length > 50 ? '...' : ''}</${tag}>`;
-                });
-                tableHTML += '</tr>';
-            });
-            
-            tableHTML += '</table>';
-            return tableHTML;
-        }
-
-        async function handleFile(file) {
-            showLoading(true);
-            originalFileName = file.name;
-            
-            try {
-                const fileExtension = file.name.split('.').pop().toLowerCase();
-                
-                if (['xls', 'xlsx'].includes(fileExtension)) {
-                    await handleExcelFile(file);
-                } else {
-                    await handleTextFile(file);
-                }
-                
-                // Show file info
-                document.getElementById('fileName').textContent = file.name;
-                document.getElementById('fileSize').textContent = formatBytes(file.size);
-                document.getElementById('fileType').textContent = fileExtension.toUpperCase();
-                
-                fileInfo.style.display = 'block';
-                convertBtn.style.display = 'inline-block';
-                
-            } catch (error) {
-                showStatus('Error processing file: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        async function handleExcelFile(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
-                        const firstSheetName = workbook.SheetNames[0];
-                        const worksheet = workbook.Sheets[firstSheetName];
-                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                        
-                        currentFileData = jsonData.filter(row => row.some(cell => cell !== undefined && cell !== ''));
-                        
-                        document.getElementById('detectedDelimiter').textContent = 'Excel format';
-                        document.getElementById('rowCount').textContent = currentFileData.length;
-                        document.getElementById('columnCount').textContent = currentFileData.length > 0 ? currentFileData[0].length : 0;
-                        
-                        // Show preview
-                        document.getElementById('previewTable').innerHTML = createPreviewTable(currentFileData);
-                        preview.style.display = 'block';
-                        
-                        resolve();
-                    } catch (error) {
-                        reject(error);
-                    }
-                };
-                reader.onerror = () => reject(new Error('Failed to read Excel file'));
-                reader.readAsArrayBuffer(file);
-            });
-        }
-
-        async function handleTextFile(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const text = e.target.result;
-                        const delimiter = detectDelimiter(text);
-                        
-                        const parsed = Papa.parse(text, {
-                            delimiter: delimiter,
-                            skipEmptyLines: true,
-                            dynamicTyping: false
-                        });
-                        
-                        if (parsed.errors.length > 0 && parsed.data.length === 0) {
-                            throw new Error('Failed to parse file: ' + parsed.errors[0].message);
-                        }
-                        
-                        currentFileData = parsed.data.filter(row => row.some(cell => cell !== undefined && cell !== ''));
-                        
-                        document.getElementById('detectedDelimiter').textContent = getDelimiterName(delimiter);
-                        document.getElementById('rowCount').textContent = currentFileData.length;
-                        document.getElementById('columnCount').textContent = currentFileData.length > 0 ? currentFileData[0].length : 0;
-                        
-                        // Show preview
-                        document.getElementById('previewTable').innerHTML = createPreviewTable(currentFileData);
-                        preview.style.display = 'block';
-                        
-                        resolve();
-                    } catch (error) {
-                        reject(error);
-                    }
-                };
-                reader.onerror = () => reject(new Error('Failed to read file'));
-                reader.readAsText(file);
-            });
-        }
-
-        function convertFile() {
-            if (!currentFileData) {
-                showStatus('No file data to convert', 'error');
+        function convertPivotToFlat(data) {
+            if (data.length < 2) {
+                showStatus('File appears to be empty or has insufficient data', 'error');
                 return;
             }
             
-            showLoading(true);
-            convertBtn.disabled = true;
+            const includeZeros = document.getElementById('includeZeros').checked;
+            const delimiter = document.getElementById('delimiter').value;
+            const dateFormat = document.getElementById('dateFormat').value;
             
-            try {
-                // Convert to pipe-delimited CSV
-                convertedData = Papa.unparse(currentFileData, {
-                    delimiter: '|',
-                    header: false,
-                    skipEmptyLines: true
-                });
+            // First row contains dates (skip first column which is part codes header)
+            const dates = data[0].slice(1);
+            
+            // Rest of the rows contain part codes and quantities
+            const flatData = [];
+            const header = ['PartCode', 'Date', 'Quantity'];
+            flatData.push(header.join(delimiter));
+            
+            for (let i = 1; i < data.length; i++) {
+                const row = data[i];
+                const partCode = row[0];
                 
-                showStatus('File successfully converted to pipe-delimited format!', 'success');
-                downloadBtn.style.display = 'inline-block';
+                if (!partCode) continue; // Skip empty rows
                 
-            } catch (error) {
-                showStatus('Error converting file: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-                convertBtn.disabled = false;
+                // Process each date column
+                for (let j = 1; j < row.length && j <= dates.length; j++) {
+                    const quantity = row[j] || 0;
+                    const date = dates[j - 1];
+                    
+                    // Skip if quantity is 0 and user doesn't want zeros
+                    if (!includeZeros && (quantity == 0 || quantity === '')) continue;
+                    
+                    // Format date if requested
+                    let formattedDate = date;
+                    if (dateFormat !== 'original' && date) {
+                        formattedDate = formatDate(date, dateFormat);
+                    }
+                    
+                    flatData.push([partCode, formattedDate, quantity].join(delimiter));
+                }
             }
+            
+            convertedData = flatData.join('\n');
+            
+            showStatus(`Successfully converted! Found ${flatData.length - 1} records.`, 'success');
+            showPreview(flatData.slice(0, 21)); // Show first 20 rows + header
+            document.getElementById('downloadBtn').disabled = false;
+        }
+
+        function formatDate(dateStr, format) {
+            if (!dateStr) return dateStr;
+            
+            // Try to parse the date string
+            let date;
+            
+            // Handle various date formats that might come from Excel
+            if (dateStr.includes('-')) {
+                // Format like "04-Aug-24" or "26-Jan-25"
+                const parts = dateStr.split('-');
+                if (parts.length === 3) {
+                    const day = parts[0];
+                    const month = parts[1];
+                    const year = parts[2].length === 2 ? '20' + parts[2] : parts[2];
+                    
+                    // Convert month name to number
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const monthNum = monthNames.indexOf(month) + 1;
+                    
+                    if (monthNum > 0) {
+                        date = new Date(year, monthNum - 1, day);
+                    }
+                }
+            }
+            
+            if (!date || isNaN(date)) {
+                // Try direct parsing
+                date = new Date(dateStr);
+            }
+            
+            if (isNaN(date)) {
+                return dateStr; // Return original if we can't parse it
+            }
+            
+            // Format according to user preference
+            switch (format) {
+                case 'yyyy-mm-dd':
+                    return date.getFullYear() + '-' + 
+                           String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(date.getDate()).padStart(2, '0');
+                case 'mm/dd/yyyy':
+                    return String(date.getMonth() + 1).padStart(2, '0') + '/' + 
+                           String(date.getDate()).padStart(2, '0') + '/' + 
+                           date.getFullYear();
+                case 'dd/mm/yyyy':
+                    return String(date.getDate()).padStart(2, '0') + '/' + 
+                           String(date.getMonth() + 1).padStart(2, '0') + '/' + 
+                           date.getFullYear();
+                default:
+                    return dateStr;
+            }
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = message;
+            statusDiv.className = 'status ' + type;
+        }
+
+        function showPreview(data) {
+            const previewDiv = document.getElementById('preview');
+            
+            if (data.length === 0) {
+                previewDiv.innerHTML = '<p>No data to preview</p>';
+                return;
+            }
+            
+            const delimiter = document.getElementById('delimiter').value;
+            let table = '<table><thead><tr>';
+            
+            // Header row
+            const headers = data[0].split(delimiter);
+            headers.forEach(header => {
+                table += '<th>' + escapeHtml(header) + '</th>';
+            });
+            table += '</tr></thead><tbody>';
+            
+            // Data rows (skip header)
+            for (let i = 1; i < Math.min(data.length, 21); i++) {
+                const row = data[i].split(delimiter);
+                table += '<tr>';
+                row.forEach(cell => {
+                    table += '<td>' + escapeHtml(cell) + '</td>';
+                });
+                table += '</tr>';
+            }
+            
+            table += '</tbody></table>';
+            
+            if (data.length > 21) {
+                table += '<p style="text-align: center; color: #666; margin-top: 10px;">... and ' + (data.length - 21) + ' more rows</p>';
+            }
+            
+            previewDiv.innerHTML = '<h3>Preview (first 20 rows)</h3>' + table;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         function downloadFile() {
             if (!convertedData) {
-                showStatus('No converted data to download', 'error');
+                showStatus('No data to download', 'error');
                 return;
             }
             
-            const blob = new Blob([convertedData], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
+            const blob = new Blob([convertedData], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = originalFilename + '_converted.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
             
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                
-                // Create filename
-                const baseName = originalFileName.replace(/\.[^/.]+$/, '');
-                link.setAttribute('download', `${baseName}_pipe_delimited.csv`);
-                
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                showStatus('File downloaded successfully!', 'success');
-            } else {
-                showStatus('Download not supported in this browser', 'error');
-            }
+            showStatus('File downloaded successfully!', 'success');
         }
     </script>
 </body>
