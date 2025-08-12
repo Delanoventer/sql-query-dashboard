@@ -523,7 +523,8 @@
                     roundNumber: 1,
                     gameHistory: [],
                     lastDart: null,
-                    name: 'Player 1'
+                    name: 'Player 1',
+                    scoreAtStartOfTurn: 301
                 },
                 2: {
                     score: 301,
@@ -532,7 +533,8 @@
                     roundNumber: 1,
                     gameHistory: [],
                     lastDart: null,
-                    name: 'Player 2'
+                    name: 'Player 2',
+                    scoreAtStartOfTurn: 301
                 }
             }
         };
@@ -725,17 +727,23 @@
             const currentPlayerData = gameState.players[gameState.currentPlayer];
             const score = number * multiplier;
             
+            // Store the score at start of turn if this is the first dart of the round
+            if (currentPlayerData.currentRound.length === 0) {
+                currentPlayerData.scoreAtStartOfTurn = currentPlayerData.score;
+            }
+            
             // Visual feedback
             showDartHit();
             
             // Check for bust
             if (currentPlayerData.score - score < 0 || 
                 (currentPlayerData.score - score === 0 && multiplier !== 2)) {
-                // Bust - end turn without scoring
+                // Bust - restore score to start of turn and end turn
+                currentPlayerData.score = currentPlayerData.scoreAtStartOfTurn;
                 currentPlayerData.currentRound = [];
                 nextPlayer();
                 updateDisplay();
-                showMessage(`${currentPlayerData.name} BUST! Turn ended.`);
+                showMessage(`${currentPlayerData.name} BUST! Score restored to ${currentPlayerData.scoreAtStartOfTurn}.`);
                 return;
             }
             
@@ -940,11 +948,18 @@
         function bustRound() {
             const currentPlayerData = gameState.players[gameState.currentPlayer];
             
+            // Restore score to start of turn if we have darts in current round
+            if (currentPlayerData.currentRound.length > 0) {
+                currentPlayerData.score = currentPlayerData.scoreAtStartOfTurn || currentPlayerData.score;
+                // Remove the darts thrown this turn from total count
+                currentPlayerData.dartsThrown -= currentPlayerData.currentRound.length;
+            }
+            
             // End round without scoring, clear current round
             currentPlayerData.currentRound = [];
             nextPlayer();
             updateDisplay();
-            showMessage(`${gameState.players[gameState.currentPlayer === 1 ? 2 : 1].name} declared BUST!`);
+            showMessage(`${gameState.players[gameState.currentPlayer === 1 ? 2 : 1].name} declared BUST! Score restored.`);
         }
 
         function startGame() {
@@ -978,7 +993,8 @@
                         roundNumber: 1,
                         gameHistory: [],
                         lastDart: null,
-                        name: gameState.players[1].name || 'Player 1'
+                        name: gameState.players[1].name || 'Player 1',
+                        scoreAtStartOfTurn: 301
                     },
                     2: {
                         score: 301,
@@ -987,7 +1003,8 @@
                         roundNumber: 1,
                         gameHistory: [],
                         lastDart: null,
-                        name: gameState.players[2].name || 'Player 2'
+                        name: gameState.players[2].name || 'Player 2',
+                        scoreAtStartOfTurn: 301
                     }
                 }
             };
