@@ -1,4 +1,11 @@
-<div class="stats-screen" id="statsScreen">
+.number-badge {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }    <div class="stats-screen" id="statsScreen">
         <div class="stats-content">
             <h2 style="text-align: center; color: #ffd700; margin-bottom: 30px;">📊 PLAYER STATISTICS</h2>
             <div class="stats-grid" id="statsGrid">
@@ -163,13 +170,36 @@
             margin-top: 10px;
         }
 
-        .number-badge {
-            background: linear-gradient(45deg, #ffd700, #ffed4e);
-            color: #333;
-            padding: 8px 12px;
-            border-radius: 20px;
+        .game-stats {
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .game-stats h4 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .numbers-hit {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .hit-badge {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
             font-weight: bold;
-            font-size: 14px;
         }
 
         .name-input {
@@ -765,6 +795,9 @@
                 Total Darts: <span id="winnerDarts">0</span><br>
                 Average per Dart: <span id="winnerAverage">0.00</span>
             </div>
+            <div class="game-stats" id="gameStats">
+                <!-- Game statistics will be populated here -->
+            </div>
             <button class="btn btn-primary" onclick="newGame()" style="margin-top: 20px;">Play Again</button>
         </div>
     </div>
@@ -997,18 +1030,28 @@
             // Visual feedback
             showDartHit();
             
-            // Check for bust
-            if (currentPlayerData.score - score < 0 || 
-                (currentPlayerData.score - score === 0 && multiplier !== 2)) {
+            // Check for bust conditions:
+            // 1. Going below 0
+            // 2. Finishing on exactly 0 but not with a double
+            // 3. Going to exactly 1 (impossible to finish)
+            const newScore = currentPlayerData.score - score;
+            if (newScore < 0 || newScore === 1 || (newScore === 0 && multiplier !== 2)) {
                 // Bust - restore score to start of turn and end turn
                 currentPlayerData.score = currentPlayerData.scoreAtStartOfTurn;
                 currentPlayerData.currentRound = [];
                 nextPlayer();
                 updateDisplay();
-                showMessage(`${currentPlayerData.name} BUST! Score restored to ${currentPlayerData.scoreAtStartOfTurn}.`);
+                
+                let bustReason = '';
+                if (newScore < 0) bustReason = 'went below zero';
+                else if (newScore === 1) bustReason = 'left with 1 (impossible to finish)';
+                else if (newScore === 0 && multiplier !== 2) bustReason = 'finished without a double';
+                
+                showMessage(`${currentPlayerData.name} BUST! (${bustReason}) Score restored to ${currentPlayerData.scoreAtStartOfTurn}.`);
                 return;
             }
             
+            // Valid throw - record it
             currentPlayerData.lastDart = {score, number, multiplier};
             currentPlayerData.score -= score;
             currentPlayerData.dartsThrown++;
@@ -1019,7 +1062,7 @@
                 currentPlayerData.numberHits[number] = (currentPlayerData.numberHits[number] || 0) + 1;
             }
             
-            // Check for win (must finish on double)
+            // Check for win (must finish on double and score is exactly 0)
             if (currentPlayerData.score === 0 && multiplier === 2) {
                 showWinner(gameState.currentPlayer);
                 return;
@@ -1351,9 +1394,41 @@
             // Save to localStorage
             localStorage.setItem('dartsPlayerStats', JSON.stringify(playerStats));
             
+            // Display winner info
             document.getElementById('winnerText').textContent = `${player.name} WINS!`;
             document.getElementById('winnerDarts').textContent = player.dartsThrown;
             document.getElementById('winnerAverage').textContent = ((301 - player.score) / player.dartsThrown).toFixed(2);
+            
+            // Show game statistics
+            const gameStatsElement = document.getElementById('gameStats');
+            gameStatsElement.innerHTML = `
+                <h4>🎯 Game Statistics</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                    <div>
+                        <strong>${player.name} (Winner)</strong><br>
+                        Darts: ${player.dartsThrown}<br>
+                        Average: ${((301 - player.score) / player.dartsThrown).toFixed(2)}
+                        <div class="numbers-hit">
+                            ${Object.entries(player.numberHits)
+                                .sort((a, b) => b[1] - a[1])
+                                .map(([num, count]) => `<span class="hit-badge">${num}: ${count}x</span>`)
+                                .join('')}
+                        </div>
+                    </div>
+                    <div>
+                        <strong>${loser.name}</strong><br>
+                        Darts: ${loser.dartsThrown}<br>
+                        Average: ${loser.dartsThrown > 0 ? ((301 - loser.score) / loser.dartsThrown).toFixed(2) : '0.00'}
+                        <div class="numbers-hit">
+                            ${Object.entries(loser.numberHits)
+                                .sort((a, b) => b[1] - a[1])
+                                .map(([num, count]) => `<span class="hit-badge">${num}: ${count}x</span>`)
+                                .join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
             document.getElementById('winnerModal').style.display = 'flex';
         }
 
