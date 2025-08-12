@@ -324,9 +324,15 @@
             box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
         }
 
-        .btn-bust:hover {
+        .btn-miss {
+            background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+            color: white;
+            box-shadow: 0 5px 15px rgba(149, 165, 166, 0.4);
+        }
+
+        .btn-miss:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(255, 71, 87, 0.6);
+            box-shadow: 0 8px 25px rgba(149, 165, 166, 0.6);
         }
 
         .winner-modal {
@@ -433,6 +439,7 @@
         <!-- Top Controls Bar -->
         <div class="top-controls">
             <button class="btn btn-primary" onclick="undoLastDart()">↶ Undo Last Dart</button>
+            <button class="btn btn-miss" onclick="missBoard()">❌ Miss Board (0)</button>
             <button class="btn btn-bust" onclick="bustRound()">💥 Declare Bust</button>
             <button class="btn btn-secondary" onclick="newGame()">🎯 New Game</button>
         </div>
@@ -822,8 +829,13 @@
                 player.currentRound.forEach(dart => {
                     const dartSpan = document.createElement('span');
                     dartSpan.className = 'dart-thrown';
-                    dartSpan.textContent = dart.multiplier > 1 ? 
-                        `${dart.multiplier}x${dart.number}` : dart.number;
+                    if (dart.number === 0) {
+                        dartSpan.textContent = 'Miss';
+                        dartSpan.style.background = 'linear-gradient(45deg, #95a5a6, #7f8c8d)';
+                    } else {
+                        dartSpan.textContent = dart.multiplier > 1 ? 
+                            `${dart.multiplier}x${dart.number}` : dart.number;
+                    }
                     currentRoundElement.appendChild(dartSpan);
                     roundTotal += dart.score;
                 });
@@ -912,9 +924,14 @@
                 roundDiv.style.borderRadius = '8px';
                 
                 const roundTotal = round.reduce((sum, dart) => sum + dart.score, 0);
+                const dartDisplay = round.map(dart => {
+                    if (dart.number === 0) return 'Miss';
+                    return dart.multiplier > 1 ? `${dart.multiplier}x${dart.number}` : dart.number;
+                }).join(', ');
+                
                 roundDiv.innerHTML = `
                     <strong>Round ${player.roundNumber - index - 1}:</strong> ${roundTotal}<br>
-                    ${round.map(dart => dart.multiplier > 1 ? `${dart.multiplier}x${dart.number}` : dart.number).join(', ')}
+                    ${dartDisplay}
                 `;
                 
                 historyElement.appendChild(roundDiv);
@@ -940,6 +957,33 @@
                 currentPlayerData.lastDart = null;
                 updateDisplay();
             }
+        }
+
+        function missBoard() {
+            const currentPlayerData = gameState.players[gameState.currentPlayer];
+            
+            // Store the score at start of turn if this is the first dart of the round
+            if (currentPlayerData.currentRound.length === 0) {
+                currentPlayerData.scoreAtStartOfTurn = currentPlayerData.score;
+            }
+            
+            // Visual feedback
+            showDartHit();
+            
+            // Record the miss (0 points)
+            currentPlayerData.lastDart = {score: 0, number: 0, multiplier: 1};
+            currentPlayerData.dartsThrown++;
+            currentPlayerData.currentRound.push({number: 0, multiplier: 1, score: 0});
+            
+            // End turn after 3 darts
+            if (currentPlayerData.currentRound.length === 3) {
+                currentPlayerData.gameHistory.unshift([...currentPlayerData.currentRound]);
+                currentPlayerData.currentRound = [];
+                currentPlayerData.roundNumber++;
+                nextPlayer();
+            }
+            
+            updateDisplay();
         }
 
         function bustRound() {
