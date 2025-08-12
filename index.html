@@ -134,6 +134,10 @@
             margin-bottom: 20px;
             color: #ffd700;
             text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .dartboard-container {
@@ -176,15 +180,29 @@
             position: absolute;
             color: white;
             font-weight: bold;
-            font-size: 20px;
+            font-size: 18px;
             text-align: center;
             pointer-events: none;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-            width: 25px;
-            height: 25px;
+            width: 30px;
+            height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .btn-bust {
+            background: linear-gradient(45deg, #ff4757, #ff3742);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+        }
+
+        .btn-bust:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 71, 87, 0.6);
         }
 
         .title {
@@ -404,11 +422,20 @@
 <body>
     <div class="stars" id="stars"></div>
     
+    <div class="setup-screen" id="setupScreen">
+        <div class="setup-content">
+            <h2>🎯 ULTIMATE 301 DARTS</h2>
+            <input type="text" class="name-input" id="player1Name" placeholder="Enter Player 1 Name" maxlength="20">
+            <input type="text" class="name-input" id="player2Name" placeholder="Enter Player 2 Name" maxlength="20">
+            <button class="btn btn-primary" onclick="startGame()" style="margin-top: 30px; font-size: 1.2rem; padding: 15px 30px;">Start Game</button>
+        </div>
+    </div>
+
     <div class="container">
         <div class="game-area">
             <!-- Player 1 Panel -->
             <div class="player-panel" id="player1Panel">
-                <div class="player-name">🎯 PLAYER 1</div>
+                <div class="player-name" id="player1NameDisplay">🎯 PLAYER 1</div>
                 <div class="score-display" id="player1Score">301</div>
                 <div class="stats">
                     <div>🎯 Darts: <span id="player1Darts">0</span></div>
@@ -438,13 +465,14 @@
                 <div class="dartboard" id="dartboard"></div>
                 <div class="controls">
                     <button class="btn btn-primary" onclick="undoLastDart()">↶ Undo</button>
-                    <button class="btn btn-secondary" onclick="newGame()">🎯 New Game</button>
+                    <button class="btn btn-bust" onclick="bustRound()">💥 Bust</button>
+                    <button class="btn btn-secondary" onclick="showSetup()">🎯 New Game</button>
                 </div>
             </div>
 
             <!-- Player 2 Panel -->
             <div class="player-panel" id="player2Panel">
-                <div class="player-name">🎯 PLAYER 2</div>
+                <div class="player-name" id="player2NameDisplay">🎯 PLAYER 2</div>
                 <div class="score-display" id="player2Score">301</div>
                 <div class="stats">
                     <div>🎯 Darts: <span id="player2Darts">0</span></div>
@@ -491,7 +519,8 @@
                     currentRound: [],
                     roundNumber: 1,
                     gameHistory: [],
-                    lastDart: null
+                    lastDart: null,
+                    name: 'Player 1'
                 },
                 2: {
                     score: 301,
@@ -499,7 +528,8 @@
                     currentRound: [],
                     roundNumber: 1,
                     gameHistory: [],
-                    lastDart: null
+                    lastDart: null,
+                    name: 'Player 2'
                 }
             }
         };
@@ -577,7 +607,7 @@
                 multiplier: 1,
                 startAngle: 0,
                 endAngle: 360,
-                radius: [0, 32],
+                radius: [16, 32],
                 color: '#008000'
             });
             
@@ -598,6 +628,9 @@
             const dartboard = document.getElementById('dartboard');
             const segments = generateSegments();
             
+            // Clear existing content
+            dartboard.innerHTML = '';
+            
             segments.forEach((segment, index) => {
                 const segmentElement = document.createElement('div');
                 segmentElement.className = 'segment';
@@ -606,28 +639,42 @@
                 segmentElement.style.height = '100%';
                 segmentElement.style.clipPath = createClipPath(segment);
                 segmentElement.style.backgroundColor = segment.color;
-                segmentElement.onclick = () => throwDart(segment.number, segment.multiplier);
+                segmentElement.onclick = (e) => {
+                    e.stopPropagation();
+                    console.log(`Clicked: ${segment.number} x${segment.multiplier} = ${segment.number * segment.multiplier}`);
+                    throwDart(segment.number, segment.multiplier);
+                };
+                
+                // Make sure bull's eye segments are on top
+                if (segment.number === 25) {
+                    segmentElement.style.zIndex = segment.multiplier === 2 ? '200' : '100';
+                }
                 
                 dartboard.appendChild(segmentElement);
             });
             
-            // Add number labels around the dartboard
+            // Add number labels around the dartboard with better positioning
             dartboardNumbers.forEach((number, index) => {
                 const label = document.createElement('div');
                 label.className = 'number-label';
                 label.textContent = number;
                 
                 // Position numbers correctly with 20 at top and 3 at bottom
+                // Adjust radius based on which numbers to avoid overlap
+                let labelRadius = 275; // Default distance from center
+                if (number === 3 || number === 17) {
+                    labelRadius = 285; // Push these further out to avoid overlap
+                }
+                
                 const angle = -90 + (index * 18) + 9; // Center of each segment, starting from top
-                const labelRadius = 265; // Outside the dartboard
                 const centerX = 250;
                 const centerY = 250;
                 
                 const x = centerX + labelRadius * Math.cos(angle * Math.PI / 180);
                 const y = centerY + labelRadius * Math.sin(angle * Math.PI / 180);
                 
-                label.style.left = (x - 12) + 'px';
-                label.style.top = (y - 12) + 'px';
+                label.style.left = (x - 15) + 'px'; // Adjusted for larger label size
+                label.style.top = (y - 15) + 'px';
                 
                 dartboard.appendChild(label);
             });
@@ -868,6 +915,36 @@
             }
         }
 
+        function bustRound() {
+            const currentPlayerData = gameState.players[gameState.currentPlayer];
+            
+            // End round without scoring, clear current round
+            currentPlayerData.currentRound = [];
+            nextPlayer();
+            updateDisplay();
+            showMessage(`${gameState.players[gameState.currentPlayer === 1 ? 2 : 1].name || 'Player ' + (gameState.currentPlayer === 1 ? 2 : 1)} declared BUST!`);
+        }
+
+        function startGame() {
+            const player1Name = document.getElementById('player1Name').value.trim() || 'Player 1';
+            const player2Name = document.getElementById('player2Name').value.trim() || 'Player 2';
+            
+            gameState.players[1].name = player1Name;
+            gameState.players[2].name = player2Name;
+            
+            document.getElementById('player1NameDisplay').textContent = `🎯 ${player1Name}`;
+            document.getElementById('player2NameDisplay').textContent = `🎯 ${player2Name}`;
+            
+            document.getElementById('setupScreen').style.display = 'none';
+            updateActivePlayer();
+            updateDisplay();
+        }
+
+        function showSetup() {
+            document.getElementById('setupScreen').style.display = 'flex';
+            document.getElementById('winnerModal').style.display = 'none';
+        }
+
         function newGame() {
             gameState = {
                 currentPlayer: 1,
@@ -878,7 +955,8 @@
                         currentRound: [],
                         roundNumber: 1,
                         gameHistory: [],
-                        lastDart: null
+                        lastDart: null,
+                        name: gameState.players[1].name || 'Player 1'
                     },
                     2: {
                         score: 301,
@@ -886,7 +964,8 @@
                         currentRound: [],
                         roundNumber: 1,
                         gameHistory: [],
-                        lastDart: null
+                        lastDart: null,
+                        name: gameState.players[2].name || 'Player 2'
                     }
                 }
             };
