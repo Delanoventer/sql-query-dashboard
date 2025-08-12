@@ -3,403 +3,732 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pivot to Flat File Converter</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <title>Ultimate 301 Darts</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            background: linear-gradient(135deg, #0c1445, #1a2980, #26c6da);
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
         }
-        .container {
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
             background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.3; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 40px;
+            align-items: start;
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        .score-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            color: white;
+            min-height: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 30px;
+
+        .dartboard-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .upload-area {
-            border: 2px dashed #007bff;
-            border-radius: 10px;
-            padding: 40px;
-            text-align: center;
-            margin-bottom: 20px;
-            background-color: #f8f9fa;
-            cursor: pointer;
+
+        .dartboard {
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            position: relative;
+            cursor: crosshair;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.3);
+            border: 8px solid #8b4513;
+            background: #000;
             transition: all 0.3s ease;
         }
-        .upload-area:hover {
-            border-color: #0056b3;
-            background-color: #e3f2fd;
+
+        .dartboard:hover {
+            box-shadow: 0 0 80px rgba(255, 215, 0, 0.5);
+            transform: scale(1.02);
         }
-        .upload-area.dragover {
-            border-color: #28a745;
-            background-color: #d4edda;
-        }
-        input[type="file"] {
-            display: none;
-        }
-        .btn {
-            background-color: #007bff;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 5px;
+
+        .segment {
+            position: absolute;
             cursor: pointer;
-            font-size: 16px;
-            margin: 10px 5px;
-            transition: background-color 0.3s;
+            transition: all 0.2s ease;
         }
-        .btn:hover {
-            background-color: #0056b3;
+
+        .segment:hover {
+            filter: brightness(1.3);
+            transform: scale(1.05);
+            z-index: 10;
         }
-        .btn:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-        }
-        .preview {
-            margin-top: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .preview table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-        }
-        .preview th, .preview td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        .preview th {
-            background-color: #f8f9fa;
+
+        .title {
+            text-align: center;
+            color: #ffd700;
+            font-size: 3rem;
             font-weight: bold;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
         }
-        .status {
-            margin: 15px 0;
-            padding: 10px;
-            border-radius: 5px;
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+            to { text-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.3); }
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 4rem;
+            color: #00ff88;
             font-weight: bold;
-        }
-        .status.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .status.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .status.info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        .options {
             margin: 20px 0;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
+            text-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+            animation: pulse 2s infinite;
         }
-        .options label {
-            display: block;
-            margin: 10px 0;
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .round-info {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dart-thrown {
+            display: inline-block;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 25px;
             font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            animation: dartPop 0.5s ease-out;
         }
-        .options input, .options select {
-            margin-left: 10px;
-            padding: 5px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
+
+        @keyframes dartPop {
+            0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+            50% { transform: scale(1.2) rotate(-90deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .finish-info {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #333;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+            animation: finishGlow 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes finishGlow {
+            from { box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3); }
+            to { box-shadow: 0 5px 30px rgba(255, 215, 0, 0.6); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+            color: white;
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.6);
+        }
+
+        .winner-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .winner-content {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            padding: 50px;
+            border-radius: 30px;
+            text-align: center;
+            color: #333;
+            font-size: 2rem;
+            font-weight: bold;
+            animation: winnerPop 0.8s ease-out;
+            box-shadow: 0 20px 50px rgba(255, 215, 0, 0.5);
+        }
+
+        @keyframes winnerPop {
+            0% { transform: scale(0) rotate(180deg); opacity: 0; }
+            70% { transform: scale(1.1) rotate(-10deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .stats {
+            font-size: 1.2rem;
+            margin: 20px 0;
+        }
+
+        .history {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .history::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .history::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .history::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .dart-sound {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            font-size: 2rem;
+            animation: dartHit 0.6s ease-out;
+            z-index: 100;
+        }
+
+        @keyframes dartHit {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
         }
     </style>
 </head>
 <body>
+    <div class="stars" id="stars"></div>
+    
     <div class="container">
-        <h1>📊 Pivot Table to Flat File Converter</h1>
-        
-        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-            <p>📁 Click here to select your Excel file or drag and drop it</p>
-            <p style="color: #666; font-size: 14px;">Supports .xlsx and .xls files</p>
+        <div class="game-area">
+            <div class="score-panel">
+                <h2>🎯 GAME STATUS</h2>
+                <div class="score-display" id="currentScore">301</div>
+                <div class="stats">
+                    <div>🎯 Darts Thrown: <span id="dartsThrown">0</span></div>
+                    <div>🎯 Average: <span id="average">0.00</span></div>
+                    <div>🎯 Round: <span id="roundNum">1</span></div>
+                </div>
+                
+                <div class="round-info">
+                    <h3>Current Round:</h3>
+                    <div id="currentRound"></div>
+                    <div>Total: <span id="roundTotal">0</span></div>
+                </div>
+                
+                <div id="finishInfo"></div>
+                
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="undoLastDart()">↶ Undo</button>
+                    <button class="btn btn-secondary" onclick="newGame()">🎯 New Game</button>
+                </div>
+            </div>
+
+            <div class="dartboard-container">
+                <h1 class="title">ULTIMATE 301</h1>
+                <div class="dartboard" id="dartboard"></div>
+            </div>
+
+            <div class="score-panel">
+                <h2>🏆 GAME HISTORY</h2>
+                <div class="history" id="gameHistory">
+                    <div style="text-align: center; color: #888; margin: 50px 0;">
+                        Start throwing darts to see your history!
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <input type="file" id="fileInput" accept=".xlsx,.xls" />
-        
-        <div class="options">
-            <h3>Output Options</h3>
-            <label>
-                Delimiter: 
-                <select id="delimiter">
-                    <option value="|">Pipe (|)</option>
-                    <option value=",">Comma (,)</option>
-                    <option value="\t">Tab</option>
-                    <option value=";">Semicolon (;)</option>
-                </select>
-            </label>
-            <label>
-                <input type="checkbox" id="includeZeros" checked> Include rows with zero quantities
-            </label>
-            <label>
-                Date Format: 
-                <select id="dateFormat">
-                    <option value="original">Keep Original</option>
-                    <option value="yyyy-mm-dd">YYYY-MM-DD</option>
-                    <option value="mm/dd/yyyy">MM/DD/YYYY</option>
-                    <option value="dd/mm/yyyy">DD/MM/YYYY</option>
-                </select>
-            </label>
+    </div>
+
+    <div class="winner-modal" id="winnerModal">
+        <div class="winner-content">
+            <div style="font-size: 4rem; margin-bottom: 20px;">🏆</div>
+            <div>GAME FINISHED!</div>
+            <div style="font-size: 1.5rem; margin: 20px 0;">
+                Final Score: <span id="finalScore">0</span><br>
+                Total Darts: <span id="totalDarts">0</span>
+            </div>
+            <button class="btn btn-primary" onclick="newGame()" style="margin-top: 20px;">Play Again</button>
         </div>
-        
-        <div id="status"></div>
-        
-        <div id="preview"></div>
-        
-        <button class="btn" id="downloadBtn" onclick="downloadFile()" disabled>📥 Download Converted File</button>
     </div>
 
     <script>
-        let convertedData = '';
-        let originalFilename = '';
+        let gameState = {
+            score: 301,
+            dartsThrown: 0,
+            currentRound: [],
+            roundNumber: 1,
+            gameHistory: [],
+            lastDart: null
+        };
 
-        // File upload handling
-        document.getElementById('fileInput').addEventListener('change', handleFile);
-        
-        // Drag and drop handling
-        const uploadArea = document.querySelector('.upload-area');
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-        
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-        
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                processFile(files[0]);
-            }
-        });
-
-        function handleFile(event) {
-            const file = event.target.files[0];
-            if (file) {
-                processFile(file);
+        // Create stars background
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
             }
         }
 
-        function processFile(file) {
-            originalFilename = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
-            showStatus('Processing file...', 'info');
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    
-                    // Get the first sheet
-                    const sheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[sheetName];
-                    
-                    // Convert to JSON format preserving the structure
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-                        header: 1, // Use array of arrays format
-                        raw: false // Get formatted strings
-                    });
-                    
-                    convertPivotToFlat(jsonData);
-                    
-                } catch (error) {
-                    showStatus('Error reading file: ' + error.message, 'error');
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
+        // Dartboard segments data
+        const segments = [
+            // Outer ring (single)
+            {number: 20, multiplier: 1, startAngle: 0, endAngle: 18, radius: [170, 225], color: '#000'},
+            {number: 1, multiplier: 1, startAngle: 18, endAngle: 36, radius: [170, 225], color: '#f5deb3'},
+            {number: 18, multiplier: 1, startAngle: 36, endAngle: 54, radius: [170, 225], color: '#000'},
+            {number: 4, multiplier: 1, startAngle: 54, endAngle: 72, radius: [170, 225], color: '#f5deb3'},
+            {number: 13, multiplier: 1, startAngle: 72, endAngle: 90, radius: [170, 225], color: '#000'},
+            {number: 6, multiplier: 1, startAngle: 90, endAngle: 108, radius: [170, 225], color: '#f5deb3'},
+            {number: 10, multiplier: 1, startAngle: 108, endAngle: 126, radius: [170, 225], color: '#000'},
+            {number: 15, multiplier: 1, startAngle: 126, endAngle: 144, radius: [170, 225], color: '#f5deb3'},
+            {number: 2, multiplier: 1, startAngle: 144, endAngle: 162, radius: [170, 225], color: '#000'},
+            {number: 17, multiplier: 1, startAngle: 162, endAngle: 180, radius: [170, 225], color: '#f5deb3'},
+            {number: 3, multiplier: 1, startAngle: 180, endAngle: 198, radius: [170, 225], color: '#000'},
+            {number: 19, multiplier: 1, startAngle: 198, endAngle: 216, radius: [170, 225], color: '#f5deb3'},
+            {number: 7, multiplier: 1, startAngle: 216, endAngle: 234, radius: [170, 225], color: '#000'},
+            {number: 16, multiplier: 1, startAngle: 234, endAngle: 252, radius: [170, 225], color: '#f5deb3'},
+            {number: 8, multiplier: 1, startAngle: 252, endAngle: 270, radius: [170, 225], color: '#000'},
+            {number: 11, multiplier: 1, startAngle: 270, endAngle: 288, radius: [170, 225], color: '#f5deb3'},
+            {number: 14, multiplier: 1, startAngle: 288, endAngle: 306, radius: [170, 225], color: '#000'},
+            {number: 9, multiplier: 1, startAngle: 306, endAngle: 324, radius: [170, 225], color: '#f5deb3'},
+            {number: 12, multiplier: 1, startAngle: 324, endAngle: 342, radius: [170, 225], color: '#000'},
+            {number: 5, multiplier: 1, startAngle: 342, endAngle: 360, radius: [170, 225], color: '#f5deb3'},
 
-        function convertPivotToFlat(data) {
-            if (data.length < 2) {
-                showStatus('File appears to be empty or has insufficient data', 'error');
-                return;
-            }
+            // Outer triple (triple)
+            {number: 20, multiplier: 3, startAngle: 0, endAngle: 18, radius: [107, 170], color: '#008000'},
+            {number: 1, multiplier: 3, startAngle: 18, endAngle: 36, radius: [107, 170], color: '#dc143c'},
+            {number: 18, multiplier: 3, startAngle: 36, endAngle: 54, radius: [107, 170], color: '#008000'},
+            {number: 4, multiplier: 3, startAngle: 54, endAngle: 72, radius: [107, 170], color: '#dc143c'},
+            {number: 13, multiplier: 3, startAngle: 72, endAngle: 90, radius: [107, 170], color: '#008000'},
+            {number: 6, multiplier: 3, startAngle: 90, endAngle: 108, radius: [107, 170], color: '#dc143c'},
+            {number: 10, multiplier: 3, startAngle: 108, endAngle: 126, radius: [107, 170], color: '#008000'},
+            {number: 15, multiplier: 3, startAngle: 126, endAngle: 144, radius: [107, 170], color: '#dc143c'},
+            {number: 2, multiplier: 3, startAngle: 144, endAngle: 162, radius: [107, 170], color: '#008000'},
+            {number: 17, multiplier: 3, startAngle: 162, endAngle: 180, radius: [107, 170], color: '#dc143c'},
+            {number: 3, multiplier: 3, startAngle: 180, endAngle: 198, radius: [107, 170], color: '#008000'},
+            {number: 19, multiplier: 3, startAngle: 198, endAngle: 216, radius: [107, 170], color: '#dc143c'},
+            {number: 7, multiplier: 3, startAngle: 216, endAngle: 234, radius: [107, 170], color: '#008000'},
+            {number: 16, multiplier: 3, startAngle: 234, endAngle: 252, radius: [107, 170], color: '#dc143c'},
+            {number: 8, multiplier: 3, startAngle: 252, endAngle: 270, radius: [107, 170], color: '#008000'},
+            {number: 11, multiplier: 3, startAngle: 270, endAngle: 288, radius: [107, 170], color: '#dc143c'},
+            {number: 14, multiplier: 3, startAngle: 288, endAngle: 306, radius: [107, 170], color: '#008000'},
+            {number: 9, multiplier: 3, startAngle: 306, endAngle: 324, radius: [107, 170], color: '#dc143c'},
+            {number: 12, multiplier: 3, startAngle: 324, endAngle: 342, radius: [107, 170], color: '#008000'},
+            {number: 5, multiplier: 3, startAngle: 342, endAngle: 360, radius: [107, 170], color: '#dc143c'},
+
+            // Inner single
+            {number: 20, multiplier: 1, startAngle: 0, endAngle: 18, radius: [32, 107], color: '#000'},
+            {number: 1, multiplier: 1, startAngle: 18, endAngle: 36, radius: [32, 107], color: '#f5deb3'},
+            {number: 18, multiplier: 1, startAngle: 36, endAngle: 54, radius: [32, 107], color: '#000'},
+            {number: 4, multiplier: 1, startAngle: 54, endAngle: 72, radius: [32, 107], color: '#f5deb3'},
+            {number: 13, multiplier: 1, startAngle: 72, endAngle: 90, radius: [32, 107], color: '#000'},
+            {number: 6, multiplier: 1, startAngle: 90, endAngle: 108, radius: [32, 107], color: '#f5deb3'},
+            {number: 10, multiplier: 1, startAngle: 108, endAngle: 126, radius: [32, 107], color: '#000'},
+            {number: 15, multiplier: 1, startAngle: 126, endAngle: 144, radius: [32, 107], color: '#f5deb3'},
+            {number: 2, multiplier: 1, startAngle: 144, endAngle: 162, radius: [32, 107], color: '#000'},
+            {number: 17, multiplier: 1, startAngle: 162, endAngle: 180, radius: [32, 107], color: '#f5deb3'},
+            {number: 3, multiplier: 1, startAngle: 180, endAngle: 198, radius: [32, 107], color: '#000'},
+            {number: 19, multiplier: 1, startAngle: 198, endAngle: 216, radius: [32, 107], color: '#f5deb3'},
+            {number: 7, multiplier: 1, startAngle: 216, endAngle: 234, radius: [32, 107], color: '#000'},
+            {number: 16, multiplier: 1, startAngle: 234, endAngle: 252, radius: [32, 107], color: '#f5deb3'},
+            {number: 8, multiplier: 1, startAngle: 252, endAngle: 270, radius: [32, 107], color: '#000'},
+            {number: 11, multiplier: 1, startAngle: 270, endAngle: 288, radius: [32, 107], color: '#f5deb3'},
+            {number: 14, multiplier: 1, startAngle: 288, endAngle: 306, radius: [32, 107], color: '#000'},
+            {number: 9, multiplier: 1, startAngle: 306, endAngle: 324, radius: [32, 107], color: '#f5deb3'},
+            {number: 12, multiplier: 1, startAngle: 324, endAngle: 342, radius: [32, 107], color: '#000'},
+            {number: 5, multiplier: 1, startAngle: 342, endAngle: 360, radius: [32, 107], color: '#f5deb3'},
+
+            // Outer double (double)
+            {number: 20, multiplier: 2, startAngle: 0, endAngle: 18, radius: [225, 250], color: '#008000'},
+            {number: 1, multiplier: 2, startAngle: 18, endAngle: 36, radius: [225, 250], color: '#dc143c'},
+            {number: 18, multiplier: 2, startAngle: 36, endAngle: 54, radius: [225, 250], color: '#008000'},
+            {number: 4, multiplier: 2, startAngle: 54, endAngle: 72, radius: [225, 250], color: '#dc143c'},
+            {number: 13, multiplier: 2, startAngle: 72, endAngle: 90, radius: [225, 250], color: '#008000'},
+            {number: 6, multiplier: 2, startAngle: 90, endAngle: 108, radius: [225, 250], color: '#dc143c'},
+            {number: 10, multiplier: 2, startAngle: 108, endAngle: 126, radius: [225, 250], color: '#008000'},
+            {number: 15, multiplier: 2, startAngle: 126, endAngle: 144, radius: [225, 250], color: '#dc143c'},
+            {number: 2, multiplier: 2, startAngle: 144, endAngle: 162, radius: [225, 250], color: '#008000'},
+            {number: 17, multiplier: 2, startAngle: 162, endAngle: 180, radius: [225, 250], color: '#dc143c'},
+            {number: 3, multiplier: 2, startAngle: 180, endAngle: 198, radius: [225, 250], color: '#008000'},
+            {number: 19, multiplier: 2, startAngle: 198, endAngle: 216, radius: [225, 250], color: '#dc143c'},
+            {number: 7, multiplier: 2, startAngle: 216, endAngle: 234, radius: [225, 250], color: '#008000'},
+            {number: 16, multiplier: 2, startAngle: 234, endAngle: 252, radius: [225, 250], color: '#dc143c'},
+            {number: 8, multiplier: 2, startAngle: 252, endAngle: 270, radius: [225, 250], color: '#008000'},
+            {number: 11, multiplier: 2, startAngle: 270, endAngle: 288, radius: [225, 250], color: '#dc143c'},
+            {number: 14, multiplier: 2, startAngle: 288, endAngle: 306, radius: [225, 250], color: '#008000'},
+            {number: 9, multiplier: 2, startAngle: 306, endAngle: 324, radius: [225, 250], color: '#dc143c'},
+            {number: 12, multiplier: 2, startAngle: 324, endAngle: 342, radius: [225, 250], color: '#008000'},
+            {number: 5, multiplier: 2, startAngle: 342, endAngle: 360, radius: [225, 250], color: '#f5deb3'},
+
+            // Bull's eye (inner)
+            {number: 25, multiplier: 2, startAngle: 0, endAngle: 360, radius: [0, 16], color: '#dc143c'},
+            // Outer bull
+            {number: 25, multiplier: 1, startAngle: 0, endAngle: 360, radius: [16, 32], color: '#008000'}
+        ];
+
+        function createDartboard() {
+            const dartboard = document.getElementById('dartboard');
             
-            const includeZeros = document.getElementById('includeZeros').checked;
-            const delimiter = document.getElementById('delimiter').value;
-            const dateFormat = document.getElementById('dateFormat').value;
-            
-            // First row contains dates (skip first column which is part codes header)
-            const dates = data[0].slice(1);
-            
-            // Rest of the rows contain part codes and quantities
-            const flatData = [];
-            const header = ['PartCode', 'Date', 'Quantity'];
-            flatData.push(header.join(delimiter));
-            
-            for (let i = 1; i < data.length; i++) {
-                const row = data[i];
-                const partCode = row[0];
+            segments.forEach((segment, index) => {
+                const segmentElement = document.createElement('div');
+                segmentElement.className = 'segment';
+                segmentElement.style.position = 'absolute';
+                segmentElement.style.width = '100%';
+                segmentElement.style.height = '100%';
+                segmentElement.style.clipPath = createClipPath(segment);
+                segmentElement.style.backgroundColor = segment.color;
+                segmentElement.onclick = () => throwDart(segment.number, segment.multiplier);
                 
-                if (!partCode) continue; // Skip empty rows
+                // Add number labels for outer single ring
+                if (segment.multiplier === 1 && segment.radius[1] === 225) {
+                    const label = document.createElement('div');
+                    label.style.position = 'absolute';
+                    label.style.color = 'white';
+                    label.style.fontWeight = 'bold';
+                    label.style.fontSize = '16px';
+                    label.style.textAlign = 'center';
+                    label.style.pointerEvents = 'none';
+                    const angle = (segment.startAngle + segment.endAngle) / 2;
+                    const labelRadius = 235;
+                    const x = 250 + labelRadius * Math.cos((angle - 90) * Math.PI / 180);
+                    const y = 250 + labelRadius * Math.sin((angle - 90) * Math.PI / 180);
+                    label.style.left = (x - 10) + 'px';
+                    label.style.top = (y - 10) + 'px';
+                    label.textContent = segment.number;
+                    segmentElement.appendChild(label);
+                }
                 
-                // Process each date column
-                for (let j = 1; j < row.length && j <= dates.length; j++) {
-                    const quantity = row[j] || 0;
-                    const date = dates[j - 1];
-                    
-                    // Skip if quantity is 0 and user doesn't want zeros
-                    if (!includeZeros && (quantity == 0 || quantity === '')) continue;
-                    
-                    // Format date if requested
-                    let formattedDate = date;
-                    if (dateFormat !== 'original' && date) {
-                        formattedDate = formatDate(date, dateFormat);
-                    }
-                    
-                    flatData.push([partCode, formattedDate, quantity].join(delimiter));
-                }
-            }
-            
-            convertedData = flatData.join('\n');
-            
-            showStatus(`Successfully converted! Found ${flatData.length - 1} records.`, 'success');
-            showPreview(flatData.slice(0, 21)); // Show first 20 rows + header
-            document.getElementById('downloadBtn').disabled = false;
-        }
-
-        function formatDate(dateStr, format) {
-            if (!dateStr) return dateStr;
-            
-            // Try to parse the date string
-            let date;
-            
-            // Handle various date formats that might come from Excel
-            if (dateStr.includes('-')) {
-                // Format like "04-Aug-24" or "26-Jan-25"
-                const parts = dateStr.split('-');
-                if (parts.length === 3) {
-                    const day = parts[0];
-                    const month = parts[1];
-                    const year = parts[2].length === 2 ? '20' + parts[2] : parts[2];
-                    
-                    // Convert month name to number
-                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                    const monthNum = monthNames.indexOf(month) + 1;
-                    
-                    if (monthNum > 0) {
-                        date = new Date(year, monthNum - 1, day);
-                    }
-                }
-            }
-            
-            if (!date || isNaN(date)) {
-                // Try direct parsing
-                date = new Date(dateStr);
-            }
-            
-            if (isNaN(date)) {
-                return dateStr; // Return original if we can't parse it
-            }
-            
-            // Format according to user preference
-            switch (format) {
-                case 'yyyy-mm-dd':
-                    return date.getFullYear() + '-' + 
-                           String(date.getMonth() + 1).padStart(2, '0') + '-' + 
-                           String(date.getDate()).padStart(2, '0');
-                case 'mm/dd/yyyy':
-                    return String(date.getMonth() + 1).padStart(2, '0') + '/' + 
-                           String(date.getDate()).padStart(2, '0') + '/' + 
-                           date.getFullYear();
-                case 'dd/mm/yyyy':
-                    return String(date.getDate()).padStart(2, '0') + '/' + 
-                           String(date.getMonth() + 1).padStart(2, '0') + '/' + 
-                           date.getFullYear();
-                default:
-                    return dateStr;
-            }
-        }
-
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('status');
-            statusDiv.innerHTML = message;
-            statusDiv.className = 'status ' + type;
-        }
-
-        function showPreview(data) {
-            const previewDiv = document.getElementById('preview');
-            
-            if (data.length === 0) {
-                previewDiv.innerHTML = '<p>No data to preview</p>';
-                return;
-            }
-            
-            const delimiter = document.getElementById('delimiter').value;
-            let table = '<table><thead><tr>';
-            
-            // Header row
-            const headers = data[0].split(delimiter);
-            headers.forEach(header => {
-                table += '<th>' + escapeHtml(header) + '</th>';
+                dartboard.appendChild(segmentElement);
             });
-            table += '</tr></thead><tbody>';
-            
-            // Data rows (skip header)
-            for (let i = 1; i < Math.min(data.length, 21); i++) {
-                const row = data[i].split(delimiter);
-                table += '<tr>';
-                row.forEach(cell => {
-                    table += '<td>' + escapeHtml(cell) + '</td>';
-                });
-                table += '</tr>';
-            }
-            
-            table += '</tbody></table>';
-            
-            if (data.length > 21) {
-                table += '<p style="text-align: center; color: #666; margin-top: 10px;">... and ' + (data.length - 21) + ' more rows</p>';
-            }
-            
-            previewDiv.innerHTML = '<h3>Preview (first 20 rows)</h3>' + table;
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        function createClipPath(segment) {
+            const centerX = 250;
+            const centerY = 250;
+            const startAngle = (segment.startAngle - 90) * Math.PI / 180;
+            const endAngle = (segment.endAngle - 90) * Math.PI / 180;
+            const innerRadius = segment.radius[0];
+            const outerRadius = segment.radius[1];
+
+            const x1 = centerX + innerRadius * Math.cos(startAngle);
+            const y1 = centerY + innerRadius * Math.sin(startAngle);
+            const x2 = centerX + outerRadius * Math.cos(startAngle);
+            const y2 = centerY + outerRadius * Math.sin(startAngle);
+            const x3 = centerX + outerRadius * Math.cos(endAngle);
+            const y3 = centerY + outerRadius * Math.sin(endAngle);
+            const x4 = centerX + innerRadius * Math.cos(endAngle);
+            const y4 = centerY + innerRadius * Math.sin(endAngle);
+
+            if (segment.startAngle === 0 && segment.endAngle === 360) {
+                return `circle(${outerRadius}px at ${centerX}px ${centerY}px)`;
+            }
+
+            return `polygon(${x1}px ${y1}px, ${x2}px ${y2}px, ${x3}px ${y3}px, ${x4}px ${y4}px)`;
         }
 
-        function downloadFile() {
-            if (!convertedData) {
-                showStatus('No data to download', 'error');
+        function throwDart(number, multiplier) {
+            const score = number * multiplier;
+            
+            // Visual feedback
+            showDartHit();
+            
+            // Check for bust
+            if (gameState.score - score < 0 || (gameState.score - score === 0 && multiplier !== 2)) {
+                // Bust - end round without scoring
+                gameState.currentRound = [];
+                gameState.roundNumber++;
+                updateDisplay();
+                showMessage("BUST! Round ended.");
                 return;
             }
             
-            const blob = new Blob([convertedData], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = originalFilename + '_converted.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            gameState.lastDart = {score, number, multiplier};
+            gameState.score -= score;
+            gameState.dartsThrown++;
+            gameState.currentRound.push({number, multiplier, score});
             
-            showStatus('File downloaded successfully!', 'success');
+            // Check for win (must finish on double)
+            if (gameState.score === 0 && multiplier === 2) {
+                showWinner();
+                return;
+            }
+            
+            // End round after 3 darts
+            if (gameState.currentRound.length === 3) {
+                gameState.gameHistory.unshift([...gameState.currentRound]);
+                gameState.currentRound = [];
+                gameState.roundNumber++;
+            }
+            
+            updateDisplay();
         }
+
+        function showDartHit() {
+            const dartboard = document.getElementById('dartboard');
+            const hit = document.createElement('div');
+            hit.className = 'dart-sound';
+            hit.textContent = '🎯';
+            dartboard.appendChild(hit);
+            
+            setTimeout(() => {
+                dartboard.removeChild(hit);
+            }, 600);
+        }
+
+        function updateDisplay() {
+            document.getElementById('currentScore').textContent = gameState.score;
+            document.getElementById('dartsThrown').textContent = gameState.dartsThrown;
+            document.getElementById('roundNum').textContent = gameState.roundNumber;
+            
+            if (gameState.dartsThrown > 0) {
+                const average = ((301 - gameState.score) / gameState.dartsThrown).toFixed(2);
+                document.getElementById('average').textContent = average;
+            }
+            
+            // Update current round display
+            const currentRoundElement = document.getElementById('currentRound');
+            currentRoundElement.innerHTML = '';
+            let roundTotal = 0;
+            
+            gameState.currentRound.forEach(dart => {
+                const dartSpan = document.createElement('span');
+                dartSpan.className = 'dart-thrown';
+                dartSpan.textContent = dart.multiplier > 1 ? 
+                    `${dart.multiplier}x${dart.number}` : dart.number;
+                currentRoundElement.appendChild(dartSpan);
+                roundTotal += dart.score;
+            });
+            
+            document.getElementById('roundTotal').textContent = roundTotal;
+            
+            // Update finish info
+            updateFinishInfo();
+            
+            // Update game history
+            updateGameHistory();
+        }
+
+        function updateFinishInfo() {
+            const finishInfo = document.getElementById('finishInfo');
+            finishInfo.innerHTML = '';
+            
+            if (gameState.score <= 170 && gameState.score > 0) {
+                const finishDiv = document.createElement('div');
+                finishDiv.className = 'finish-info';
+                
+                if (gameState.score % 2 === 0 && gameState.score <= 40) {
+                    finishDiv.innerHTML = `🎯 FINISH ON: Double ${gameState.score / 2}`;
+                } else {
+                    const possibleFinishes = getPossibleFinishes(gameState.score);
+                    if (possibleFinishes.length > 0) {
+                        finishDiv.innerHTML = `🎯 POSSIBLE FINISHES:<br>${possibleFinishes.join('<br>')}`;
+                    }
+                }
+                
+                if (finishDiv.innerHTML) {
+                    finishInfo.appendChild(finishDiv);
+                }
+            }
+        }
+
+        function getPossibleFinishes(score) {
+            const finishes = [];
+            
+            // Check for 2-dart finishes
+            for (let first = 1; first <= 60; first++) {
+                const remaining = score - first;
+                if (remaining > 0 && remaining <= 40 && remaining % 2 === 0) {
+                    finishes.push(`${first} → D${remaining / 2}`);
+                    if (finishes.length >= 3) break;
+                }
+            }
+            
+            return finishes;
+        }
+
+        function updateGameHistory() {
+            const historyElement = document.getElementById('gameHistory');
+            historyElement.innerHTML = '';
+            
+            if (gameState.gameHistory.length === 0) {
+                historyElement.innerHTML = '<div style="text-align: center; color: #888; margin: 50px 0;">Start throwing darts to see your history!</div>';
+                return;
+            }
+            
+            gameState.gameHistory.forEach((round, index) => {
+                const roundDiv = document.createElement('div');
+                roundDiv.style.marginBottom = '15px';
+                roundDiv.style.padding = '10px';
+                roundDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                roundDiv.style.borderRadius = '8px';
+                
+                const roundTotal = round.reduce((sum, dart) => sum + dart.score, 0);
+                roundDiv.innerHTML = `
+                    <strong>Round ${gameState.roundNumber - index - 1}:</strong> ${roundTotal}<br>
+                    ${round.map(dart => dart.multiplier > 1 ? `${dart.multiplier}x${dart.number}` : dart.number).join(', ')}
+                `;
+                
+                historyElement.appendChild(roundDiv);
+            });
+        }
+
+        function undoLastDart() {
+            if (gameState.lastDart) {
+                gameState.score += gameState.lastDart.score;
+                gameState.dartsThrown--;
+                
+                // Remove from current round
+                if (gameState.currentRound.length > 0) {
+                    gameState.currentRound.pop();
+                } else if (gameState.gameHistory.length > 0) {
+                    // Restore last completed round
+                    gameState.currentRound = gameState.gameHistory.shift();
+                    gameState.currentRound.pop();
+                    gameState.roundNumber--;
+                }
+                
+                gameState.lastDart = null;
+                updateDisplay();
+            }
+        }
+
+        function newGame() {
+            gameState = {
+                score: 301,
+                dartsThrown: 0,
+                currentRound: [],
+                roundNumber: 1,
+                gameHistory: [],
+                lastDart: null
+            };
+            
+            document.getElementById('winnerModal').style.display = 'none';
+            updateDisplay();
+        }
+
+        function showWinner() {
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('totalDarts').textContent = gameState.dartsThrown;
+            document.getElementById('winnerModal').style.display = 'flex';
+        }
+
+        function showMessage(message) {
+            // Simple alert for now - could be enhanced with custom modal
+            setTimeout(() => alert(message), 100);
+        }
+
+        // Initialize the game
+        createStars();
+        createDartboard();
+        updateDisplay();
     </script>
 </body>
 </html>
