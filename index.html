@@ -83,6 +83,84 @@
             text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
         }
 
+        .player-select {
+            display: block;
+            width: 300px;
+            padding: 15px;
+            margin: 15px auto;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .stats-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .stats-content {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            padding: 40px;
+            border-radius: 30px;
+            color: white;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .player-stats {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .top-numbers {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .number-badge {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
         .name-input {
             display: block;
             width: 300px;
@@ -330,9 +408,15 @@
             box-shadow: 0 5px 15px rgba(149, 165, 166, 0.4);
         }
 
-        .btn-miss:hover {
+        .btn-stats {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-stats:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(149, 165, 166, 0.6);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.6);
         }
 
         .winner-modal {
@@ -429,9 +513,41 @@
     <div class="setup-screen" id="setupScreen">
         <div class="setup-content">
             <h2>🎯 ULTIMATE 301 DARTS</h2>
-            <input type="text" class="name-input" id="player1Name" placeholder="Enter Player 1 Name" maxlength="20">
-            <input type="text" class="name-input" id="player2Name" placeholder="Enter Player 2 Name" maxlength="20">
+            <select class="player-select" id="player1Select">
+                <option value="">Select Player 1</option>
+                <option value="Dene Eksteen">Dene Eksteen</option>
+                <option value="Dirco Teessen">Dirco Teessen</option>
+                <option value="Emily Dvorak">Emily Dvorak</option>
+                <option value="Kara Engelke">Kara Engelke</option>
+                <option value="Kieran Ellis">Kieran Ellis</option>
+                <option value="Leon Visagie">Leon Visagie</option>
+                <option value="Martin Van Coller">Martin Van Coller</option>
+                <option value="Ruandre Roux">Ruandre Roux</option>
+            </select>
+            <select class="player-select" id="player2Select">
+                <option value="">Select Player 2</option>
+                <option value="Dene Eksteen">Dene Eksteen</option>
+                <option value="Dirco Teessen">Dirco Teessen</option>
+                <option value="Emily Dvorak">Emily Dvorak</option>
+                <option value="Kara Engelke">Kara Engelke</option>
+                <option value="Kieran Ellis">Kieran Ellis</option>
+                <option value="Leon Visagie">Leon Visagie</option>
+                <option value="Martin Van Coller">Martin Van Coller</option>
+                <option value="Ruandre Roux">Ruandre Roux</option>
+            </select>
             <button class="btn btn-primary" onclick="startGame()" style="margin-top: 30px; font-size: 1.2rem; padding: 15px 30px;">Start Game</button>
+        </div>
+    </div>
+
+    <div class="stats-screen" id="statsScreen">
+        <div class="stats-content">
+            <h2 style="text-align: center; color: #ffd700; margin-bottom: 30px;">📊 PLAYER STATISTICS</h2>
+            <div class="stats-grid" id="statsGrid">
+                <!-- Player stats will be populated here -->
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-primary" onclick="closeStats()">Close Statistics</button>
+            </div>
         </div>
     </div>
 
@@ -441,6 +557,7 @@
             <button class="btn btn-primary" onclick="undoLastDart()">↶ Undo Last Dart</button>
             <button class="btn btn-miss" onclick="missBoard()">❌ Miss Board (0)</button>
             <button class="btn btn-bust" onclick="bustRound()">💥 Declare Bust</button>
+            <button class="btn btn-stats" onclick="showStats()">📊 Statistics</button>
             <button class="btn btn-secondary" onclick="newGame()">🎯 New Game</button>
         </div>
         
@@ -528,7 +645,8 @@
                     gameHistory: [],
                     lastDart: null,
                     name: 'Player 1',
-                    scoreAtStartOfTurn: 301
+                    scoreAtStartOfTurn: 301,
+                    numberHits: {}
                 },
                 2: {
                     score: 301,
@@ -538,10 +656,14 @@
                     gameHistory: [],
                     lastDart: null,
                     name: 'Player 2',
-                    scoreAtStartOfTurn: 301
+                    scoreAtStartOfTurn: 301,
+                    numberHits: {}
                 }
             }
         };
+
+        // Player statistics storage
+        let playerStats = JSON.parse(localStorage.getItem('dartsPlayerStats') || '{}');
 
         // PROPER DARTBOARD NUMBERING - Standard dartboard sequence starting with 20 at top
         const dartboardNumbers = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
@@ -755,6 +877,11 @@
             currentPlayerData.score -= score;
             currentPlayerData.dartsThrown++;
             currentPlayerData.currentRound.push({number, multiplier, score});
+            
+            // Track number hits for statistics
+            if (number > 0) {
+                currentPlayerData.numberHits[number] = (currentPlayerData.numberHits[number] || 0) + 1;
+            }
             
             // Check for win (must finish on double)
             if (currentPlayerData.score === 0 && multiplier === 2) {
@@ -1004,11 +1131,24 @@
         }
 
         function startGame() {
-            const player1Name = document.getElementById('player1Name').value.trim() || 'Player 1';
-            const player2Name = document.getElementById('player2Name').value.trim() || 'Player 2';
+            const player1Name = document.getElementById('player1Select').value || 'Player 1';
+            const player2Name = document.getElementById('player2Select').value || 'Player 2';
+            
+            if (player1Name === player2Name && player1Name !== 'Player 1') {
+                alert('Please select different players!');
+                return;
+            }
             
             gameState.players[1].name = player1Name;
             gameState.players[2].name = player2Name;
+            
+            // Initialize player stats if they don't exist
+            if (!playerStats[player1Name]) {
+                playerStats[player1Name] = { games: 0, wins: 0, totalDarts: 0, numberHits: {} };
+            }
+            if (!playerStats[player2Name]) {
+                playerStats[player2Name] = { games: 0, wins: 0, totalDarts: 0, numberHits: {} };
+            }
             
             document.getElementById('player1NameDisplay').textContent = `🎯 ${player1Name}`;
             document.getElementById('player2NameDisplay').textContent = `🎯 ${player2Name}`;
@@ -1030,7 +1170,8 @@
                         gameHistory: [],
                         lastDart: null,
                         name: gameState.players[1].name || 'Player 1',
-                        scoreAtStartOfTurn: 301
+                        scoreAtStartOfTurn: 301,
+                        numberHits: {}
                     },
                     2: {
                         score: 301,
@@ -1040,7 +1181,8 @@
                         gameHistory: [],
                         lastDart: null,
                         name: gameState.players[2].name || 'Player 2',
-                        scoreAtStartOfTurn: 301
+                        scoreAtStartOfTurn: 301,
+                        numberHits: {}
                     }
                 }
             };
@@ -1052,10 +1194,102 @@
 
         function showWinner(playerNum) {
             const player = gameState.players[playerNum];
+            const loser = gameState.players[playerNum === 1 ? 2 : 1];
+            
+            // Update player statistics
+            playerStats[player.name].games++;
+            playerStats[player.name].wins++;
+            playerStats[player.name].totalDarts += player.dartsThrown;
+            
+            playerStats[loser.name].games++;
+            playerStats[loser.name].totalDarts += loser.dartsThrown;
+            
+            // Merge number hits into permanent stats
+            Object.keys(player.numberHits).forEach(num => {
+                playerStats[player.name].numberHits[num] = (playerStats[player.name].numberHits[num] || 0) + player.numberHits[num];
+            });
+            Object.keys(loser.numberHits).forEach(num => {
+                playerStats[loser.name].numberHits[num] = (playerStats[loser.name].numberHits[num] || 0) + loser.numberHits[num];
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('dartsPlayerStats', JSON.stringify(playerStats));
+            
             document.getElementById('winnerText').textContent = `${player.name} WINS!`;
             document.getElementById('winnerDarts').textContent = player.dartsThrown;
             document.getElementById('winnerAverage').textContent = ((301 - player.score) / player.dartsThrown).toFixed(2);
             document.getElementById('winnerModal').style.display = 'flex';
+        }
+
+        function showStats() {
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = '';
+            
+            Object.keys(playerStats).forEach(playerName => {
+                const stats = playerStats[playerName];
+                const winRate = stats.games > 0 ? ((stats.wins / stats.games) * 100).toFixed(1) : 0;
+                const avgDarts = stats.games > 0 ? (stats.totalDarts / stats.games).toFixed(1) : 0;
+                
+                // Get top 3 most hit numbers
+                const sortedNumbers = Object.entries(stats.numberHits)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3);
+                
+                const playerDiv = document.createElement('div');
+                playerDiv.className = 'player-stats';
+                playerDiv.innerHTML = `
+                    <h3 style="color: #ffd700; text-align: center; margin-bottom: 20px;">${playerName}</h3>
+                    <div class="stat-item">
+                        <span>Games Played:</span>
+                        <span>${stats.games}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Games Won:</span>
+                        <span>${stats.wins}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Win Rate:</span>
+                        <span>${winRate}%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Avg Darts per Game:</span>
+                        <span>${avgDarts}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Top 3 Numbers:</span>
+                        <div class="top-numbers">
+                            ${sortedNumbers.map(([num, count]) => 
+                                `<div class="number-badge">${num} (${count}x)</div>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                statsGrid.appendChild(playerDiv);
+            });
+            
+            document.getElementById('statsScreen').style.display = 'flex';
+        }
+
+        function closeStats() {
+            document.getElementById('statsScreen').style.display = 'none';
+        }
+
+        function showMessage(message) {
+            setTimeout(() => alert(message), 100);
+        }
+
+        // Initialize the game
+        createStars();
+        createDartboard();
+        updateActivePlayer();
+        updateDisplay();
+    </script>
+</body>
+</html>
+
+        function closeStats() {
+            document.getElementById('statsScreen').style.display = 'none';
         }
 
         function showMessage(message) {
