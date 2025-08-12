@@ -1338,6 +1338,11 @@
         }
 
         function newGame() {
+            // Store current player names
+            const player1Name = gameState.players[1].name;
+            const player2Name = gameState.players[2].name;
+            
+            // Reset game state completely
             gameState = {
                 currentPlayer: 1,
                 players: {
@@ -1348,7 +1353,7 @@
                         roundNumber: 1,
                         gameHistory: [],
                         lastDart: null,
-                        name: gameState.players[1].name || 'Player 1',
+                        name: player1Name,
                         scoreAtStartOfTurn: 301,
                         numberHits: {}
                     },
@@ -1359,14 +1364,19 @@
                         roundNumber: 1,
                         gameHistory: [],
                         lastDart: null,
-                        name: gameState.players[2].name || 'Player 2',
+                        name: player2Name,
                         scoreAtStartOfTurn: 301,
                         numberHits: {}
                     }
                 }
             };
             
+            // Close any open modals
             document.getElementById('winnerModal').style.display = 'none';
+            document.getElementById('statsScreen').style.display = 'none';
+            document.getElementById('leaderboardScreen').style.display = 'none';
+            
+            // Update displays
             updateActivePlayer();
             updateDisplay();
         }
