@@ -1,22 +1,4 @@
-.number-badge {
-            background: linear-gradient(45deg, #ffd700, #ffed4e);
-            color: #333;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 14px;
-        }    <div class="stats-screen" id="statsScreen">
-        <div class="stats-content">
-            <h2 style="text-align: center; color: #ffd700; margin-bottom: 30px;">📊 PLAYER STATISTICS</h2>
-            <div class="stats-grid" id="statsGrid">
-                <!-- Player stats will be populated here -->
-            </div>
-            <div style="text-align: center; margin-top: 30px;">
-                <button class="btn btn-danger" onclick="clearAllStats()" style="margin-right: 15px;">🗑️ Clear All Statistics</button>
-                <button class="btn btn-primary" onclick="closeStats()">Close Statistics</button>
-            </div>
-        </div>
-    </div><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -168,6 +150,15 @@
             display: flex;
             gap: 10px;
             margin-top: 10px;
+        }
+
+        .number-badge {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
         }
 
         .game-stats {
@@ -656,6 +647,7 @@
                 <option value="Dirco">Dirco</option>
                 <option value="Emily">Emily</option>
                 <option value="Kara">Kara</option>
+                <option value="Keegan">Keegan</option>
                 <option value="Kieran">Kieran</option>
                 <option value="Martin">Martin</option>
                 <option value="Ruandre">Ruandre</option>
@@ -672,6 +664,7 @@
                 <option value="Dirco">Dirco</option>
                 <option value="Emily">Emily</option>
                 <option value="Kara">Kara</option>
+                <option value="Keegan">Keegan</option>
                 <option value="Kieran">Kieran</option>
                 <option value="Martin">Martin</option>
                 <option value="Ruandre">Ruandre</option>
@@ -704,6 +697,8 @@
             </div>
         </div>
     </div>
+
+    <div class="stats-screen" id="statsScreen">
         <div class="stats-content">
             <h2 style="text-align: center; color: #ffd700; margin-bottom: 30px;">📊 PLAYER STATISTICS</h2>
             <div class="stats-grid" id="statsGrid">
